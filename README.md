@@ -24,7 +24,13 @@ It may so happen that the tokens never hit reserves in the smart contract, and t
 
 ## Summary
 
-This approach to funding ensures that there is no overraise that many people witnessed with ICOs. This method also gives more power over project to the contributors - the people who create it. There is no overspent on marketing, pr and other bs that the current ICO craze has created.
+This approach to funding has a few advantages to traditional ICOs.
+
+ * it ensures that there is no over raise that many people witnessed with ICOs. 
+ * more power over project to the contributors - the people who create it. Contributors may decide how much of their compensation to keep in tokens, rather than given a fixed amount.
+ * less risk of loosing the raised funds, since only a small amount of crypto is locked, not all the amount raised.
+ * there is less wastage of funds on marketing, pr and other bs that the current ICO craze has created.
+ * if there is a loss of interest in the project the investors can get back part of their investments any time before the project is complete.
 
 
 
