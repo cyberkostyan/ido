@@ -12,7 +12,7 @@ The same amount of ERC20 tokens is issued as the money in smart contract reserve
 
 However, only a small % of the tokens is assigned to investor (let's say 10% initially), the rest of the tokens (e.g. 90%) is sitting inside the smart contract, and founders decide who to assign these tokens.
 
-Now the project needs contributors, marketing people, etc. Instead of paying contributors in fiat or crypto, the founder of the project may be paying in tokens that he controls. The contributors are guaranteed to exchange these tokens in a 1:1 
+Now the project needs contributors, marketing people, etc. Instead of paying contributors in fiat or crypto, the founder of the project may be paying in tokens that he controls. The contributors are guaranteed to exchange these tokens into crypto (ETH) with a 1:1 ratio.
 
 Now the tokens can be exchanged into crypto (in case of ethereum - ETH) at any time with a 1:1 ratio. But if the contributors believe in the succes of the project they will likely choose to keep them. Or sell them on exchange.
 
