@@ -34,7 +34,7 @@ This approach to funding has a few advantages to traditional ICOs.
 
 ## Annihilat.io
 
-[Annihilat.io] is a testground for IDO funding method. 
+[Annihilat.io](https://annihilat.io/) is a testground for IDO funding method.
 
 It is a simple idea combining two working technologies. DPOS (of graphene) and Solidity smart contracts. At the time of the writing Ethereum's market cap is roughly 30 billion dollars. If our blockchain reaches 1/1000th of that success, the market cap of Annihilat.io will reach $28m. If we, as founders/investors keep 10% of that, we will make a little bit of money. But on the way to this success 90% that is distributed to contributors may make some good money too.
 
