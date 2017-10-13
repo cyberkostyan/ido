@@ -1,1 +1,5 @@
-Here will be the specs for IDO smart contract.
+# Specs for Annihilat.io smart contract
+
+## Abstract.
+
+This smart contract will implement functionality of Initial Development Offering for contributing to Annihilat.io. This is basically an ERC-223 standart token with some additional functionality. 
