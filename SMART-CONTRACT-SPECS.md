@@ -2,11 +2,20 @@
 
 ## Abstract.
 
-This smart contract will implement functionality of [Initial Development Offering](README.md) for contributing to Annihilat.io. This is basically an [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) standart token with some additional functionality.
+This smart contract will implement functionality of [Initial Development Offering](README.md) for contributing to Annihilat.io. This is basically an [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) standart token with some additional functionality that gives the founders ability to settle developmers in tokens. Tokens are backed up by ethereum with a 1:1 ratio. When contributors are compensated for their work, token is transferred from project multisig wallet to contributor's wallet.
+
+If project wallet is empty, founders (controlling multisig wallet) set a new round of investment, they set a starting rate that investments are accepted at. E.g. 1:3. That means investor will get 1 token in exchange for 3 ether, and project multisig address will get 2 tokens. Founders also set maximum investment accepted for this round.
+
+Every day the rate is decrease by a certain amount. E.g 0.5... This means that the rate will be as follows:
+* day 1: 1:3 (investor 1 token, project 2 tokens for every 1 ETH invested)
+* day 2: 1:2.5 (investor 1 token, project 1.5 tokens for every 1 ETH invested)
+* day 3: 1:2 (investor 1 token, project 1 token for every 1 ETH invested)
+* day 4: 1:1.5 (investor 1 token, project 1.5 token for every 1 ETH invested)
+* day 5: the round is finished as for every ether invested, there is no tokens for project.
 
 # ERC20
 
-It is important for the Token to be ERC20 compliant to be listed immediately on DEXes. E.g. EtherDelta. 
+It is important for the Token to be [ERC20 compliant](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) to be listed immediately on DEXes. E.g. EtherDelta. 
 
 Make sure we have an alternative method in the token 
 
@@ -16,9 +25,9 @@ Make sure we have an alternative method in the token
 
 This is an alternative to *approve* without security issues.
 
-# Owners
+# Multiple Owners
 
-The contract must be owned by multiple owners. X out of Y owner decisions need to be required in order to perform the following API operations:
+The contract must be owned by multiple owners. X out of Y owner decisions need to be required in order to perform the following API operations that transfer ownership to other owners in case they changed:
 
 ```javascript
  function transferOwnership(address _from, _to) returns (uint _txIndex) {
@@ -44,3 +53,6 @@ The contract must be owned by multiple owners. X out of Y owner decisions need t
  }
 
  ```
+
+
+
