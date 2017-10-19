@@ -2,9 +2,13 @@
 
 ## Abstract.
 
-This smart contract will implement functionality of [Initial Development Offering](README.md) for contributing to Annihilat.io. This is basically an [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) standart token with some additional functionality that gives the founders ability to settle developmers in tokens. Tokens are backed up by ethereum with a 1:1 ratio. When contributors are compensated for their work, token is transferred from project multisig wallet to contributor's wallet.
+This smart contract will implement functionality of [Initial Development Offering](README.md) for contributing to Annihilat.io. This is basically an [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) standart token with some additional functionality that gives the founders ability to settle developmers in tokens.
 
-If project wallet is empty, founders (controlling multisig wallet) set a new round of investment, they set a starting rate that investments are accepted at. E.g. 1:3. That means investor will get 1 token in exchange for 3 ether, and project multisig address will get 2 tokens. Founders also set maximum investment accepted for this round.
+## Specs
+
+Tokens are backed by ethereum with a 1:1 ratio. When contributors are compensated for their work, token is transferred from project multisig wallet to contributor's wallet. Then contributors at any time they want can exchange the tokens for ETH kept in smart contract witha 1:1 ratio, at wich point the Tokens are burnt. As the amount of tokens issued must always be equal to amount of ETH in the contract. All transaction fees must be paid by caller of contract methods.
+
+If project wallet is empty (project out of tokens), founders (controlling multisig wallet) setup a new round of investment, they set a starting rate that investments are accepted at. E.g. 1:3. That means investor will get 1 token in exchange for 3 ether, and project multisig address will get 2 tokens. Founders also set maximum investment accepted for this round.
 
 Every day the rate is decrease by a certain amount. E.g 0.5... This means that the rate will be as follows:
 * day 1: 1:3 (investor 1 token, project 2 tokens for every 1 ETH invested)
@@ -13,7 +17,7 @@ Every day the rate is decrease by a certain amount. E.g 0.5... This means that t
 * day 4: 1:1.5 (investor 1 token, project 1.5 token for every 1 ETH invested)
 * day 5: the round is finished as for every ether invested, there is no tokens for project.
 
-# ERC20
+## ERC20
 
 It is important for the Token to be [ERC20 compliant](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) to be listed immediately on DEXes. E.g. EtherDelta. 
 
@@ -25,7 +29,12 @@ Make sure we have an alternative method in the token
 
 This is an alternative to *approve* without security issues.
 
-# Multiple Owners
+# Minting
+The minting of tokens is automatic during crowdfunding rounds.
+
+# Multisig
+
+The Token contract is a usual contract,
 
 The contract must be owned by multiple owners. X out of Y owner decisions need to be required in order to perform the following API operations that transfer ownership to other owners in case they changed:
 
