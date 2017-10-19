@@ -30,7 +30,27 @@ Make sure we have an alternative method in the token
 This is an alternative to *approve* without security issues.
 
 # Minting
-The minting of tokens is automatic during crowdfunding rounds.
+The minting of tokens is automatic during crowdfunding rounds. The Crowdsale is either on or off.
+
+```javascript
+bool crowdsaleLive = false;
+```
+If corwdsale is not LIVE all ETH sent to contract is automatically sent back.
+
+If crowdsale is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed between the project multisig wallet and the sender of the ETH.
+
+Crowdsale automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send tokens to the contract and receive their portion of the tokens. Sending anyamount of ETH to the token address triggers the crowdsaleLive flag to be set to true and countdown begins. You can also trigger the crowdsale by calling a special method.
+
+```javascript
+function setLive() {
+  if (<no more than 1 token left in project wallet>) {
+     crowdsaleLive = true;
+     <startCrowdsaleCountdown>
+  }
+}
+```
+
+Crowdsale ends according to specification. Either when the desired amount is raised (set by founders' multisig decision). Or the day comes when there is no tokens to project distributed to project multisig wallet.
 
 # Multisig
 
