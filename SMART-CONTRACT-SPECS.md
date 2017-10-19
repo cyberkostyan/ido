@@ -54,7 +54,7 @@ TGE round ends according to specification. Either when the desired amount is rai
 
 ### TGE settings.
 
-Founders' multisig contract controls how each TGE is setup by setting 4 parameters.
+Founders' multisig contract controls how each TGE round is setup by setting 4 parameters.
 1. Amount in ETH to be raised.
 2. Starting ratio of TOKENS to invested ETH. (amount of tokens that goes to investor).
 3. Duration of each stage of round where ratio remains the same. (in number of blocks to make the pace more definite)
