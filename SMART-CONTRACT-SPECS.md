@@ -62,7 +62,7 @@ Founders' multisig contract controls how each TGE round is setup by setting 4 pa
 
 ## Multisig
 
-The Token contract is a usual multisig wallet that can hold and control ERC20 tokens.
+The Token contract's project tokens must be controlled by founder's multisig wallet. Also this mutisig contract must control the settings of each TGE round.
 
 The contract must be owned by multiple owners. X out of Y owner decisions need to be required in order to perform the following API operations that transfer ownership to other owners in case they changed:
 
