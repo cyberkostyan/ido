@@ -29,7 +29,7 @@ Make sure we have an alternative method in the token
 
 This is an alternative to *approve* without security issues.
 
-# Minting
+## Minting
 The minting of tokens is automatic during crowdfunding rounds or how Swiss lawyers like to call them Token Generation Event rounds. The Token Generation Event (TGE) is either on or off.
 
 ```javascript
@@ -52,9 +52,17 @@ function setLive() {
 
 TGE round ends according to specification. Either when the desired amount is raised (set by founders' multisig decision). Or the day comes when there is no tokens to project distributed to project multisig wallet.
 
-# Multisig
+### TGE settings.
 
-The Token contract is a usual contract,
+Founders' multisig contract controls how each TGE is setup by setting 4 parameters.
+1. Amount in ETH to be raised.
+2. Starting ratio of TOKENS to invested ETH. (amount of tokens that goes to investor).
+3. Duration of each stage of round where ratio remains the same. (in number of blocks to make the pace more definite)
+4. The amount of multiplier being deducted from tokens going to project.
+
+## Multisig
+
+The Token contract is a usual multisig wallet that can hold and control ERC20 tokens.
 
 The contract must be owned by multiple owners. X out of Y owner decisions need to be required in order to perform the following API operations that transfer ownership to other owners in case they changed:
 
