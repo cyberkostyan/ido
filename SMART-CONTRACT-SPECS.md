@@ -55,10 +55,24 @@ TGE round ends according to specification. Either when the desired amount is rai
 ### TGE settings.
 
 Founders' multisig contract controls how each TGE round is setup by setting 4 parameters.
-1. Amount in ETH to be raised.
+
+1. Amount in ETH/tokens to be raised.
 2. Starting ratio of TOKENS to invested ETH. (amount of tokens that goes to investor).
 3. Duration of each stage of round where ratio remains the same. (in number of blocks to make the pace more definite)
-4. The amount of multiplier being deducted from tokens going to project.
+4. The amount of multiplier being deducted from tokens going to project on each stage.
+
+When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
+
+```javascript
+function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) returns (uint _txIndex) {
+//
+// example: tgeSettingsChangeRequest(1000, 10, 89, 1, 6000, 2);
+//
+}
+
+```
+
+Note: I am not a solidity programmer, so the functions may differ, its only a suggestion.
 
 ## Multisig
 
@@ -82,6 +96,12 @@ The contract must be owned by multiple owners. X out of Y owner decisions need t
  // original transferOwnership. This function will return true if 
  // no more confirmations is required from other owner.
  }
+ 
+function viewTransferDetails(uint _txIndex) returns (address _from, _to, approvedBy) {
+// returns the addresses requested for the _txIndex so the approver
+// can verify easily what was sent in transfer request.
+// approvedBy will show how many founders have approved the transfer already.
+}
 
  function acceptTransferOwnership(uint _txIndex) returns (bool success) {
  // this must be called by the new owner in order for the ownership transfer
