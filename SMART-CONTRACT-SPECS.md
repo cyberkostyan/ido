@@ -37,9 +37,9 @@ bool tgeLive = false;
 ```
 If TGE is not LIVE all ETH sent to contract is automatically sent back.
 
-If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed between the project multisig wallet and the sender of the ETH.
+If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed according to tgeSettings.
 
-TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send tokens to the contract and receive their portion of the tokens. Sending anyamount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
+TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send tokens to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
 
 ```javascript
 function setLive() {
@@ -48,43 +48,11 @@ function setLive() {
      <start TGE countdown>
   }
 }
+
 ```
+    Note: On minting, do not forget to include the ERC20-compliant call to Transfer event so that many wallets and block explorers can 
 
 TGE round ends according to specification. Either when the desired amount is raised (set by founders' multisig decision). Or the day comes when there is no tokens to project distributed to project multisig wallet.
-
-### TGE settings.
-
-Founders' multisig contract controls how each TGE round is setup by setting 4 parameters.
-
-1. Amount in ETH/tokens to be raised.
-2. Starting ratio of TOKENS to invested ETH. (amount of tokens that goes to investor).
-3. Duration of each stage of round where ratio remains the same. (in number of blocks to make the pace more definite)
-4. The amount of multiplier being deducted from tokens going to project on each stage.
-
-When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
-
-```javascript
-function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
-// sends a request to change settings.
-// @returns index of the settings change request. other founders will confirm
-// the changes using this index.
-// example: tgeSettingsChangeRequest(1000, 10, 89, 1, 6000, 2);
-//
-}
-
-function confirmSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (bool success) {
-// confirms settings change previously requested by another founder
-// @returns true if confirmed successfully, false if more confirmations are needed.
-}
-
-function viewSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) {
-// shows what settings were requested in a settings change request
-// 
-}
-
-```
-
-Note: I am not a solidity programmer, so the functions may differ, its only a suggestion.
 
 ## Multisig
 
@@ -123,5 +91,55 @@ function viewTransferDetails(uint _txIndex) returns (address _from, _to, approve
 
  ```
 
+## TGE settings.
 
+Founders' multisig contract controls how each TGE round is setup by setting 4 parameters.
+
+1. Amount in ETH/tokens to be raised.
+2. Starting ratio of TOKENS to invested ETH. (amount of tokens that goes to investor).
+3. Duration of each stage of round where ratio remains the same. (in number of blocks to make the pace more definite)
+4. The amount of multiplier being deducted from tokens going to project on each stage.
+
+When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
+
+```javascript
+function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
+// sends a request to change settings.
+// @returns index of the settings change request. other founders will confirm
+// the changes using this index.
+// example: tgeSettingsChangeRequest(1000, 10, 89, 1, 6000, 2);
+//
+}
+
+function confirmSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (bool success) {
+// confirms settings change previously requested by another founder
+// @returns true if confirmed successfully, false if more confirmations are needed.
+}
+
+function viewSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) {
+// shows what settings were requested in a settings change request
+// 
+}
+
+```
+
+Note: I am not a solidity programmer, so the functions may differ, its only a suggestion.
+
+## Burning
+
+The tokens can be liquidated at any time by a token holder, at this stage tokens are burnt and the token contract sends the same amount of ETH to token holder. Token holder obviously can not burn more tokens than he owns. Also as tokens are burnt total supply is decreased by the same number of tokens.
+
+It should be a simple function to exchange ether for tokens. Something like:
+
+```javascript
+function burn(uint amount) public tgeNotLive returns (bool success) {
+// @returns true if tokens were burnt successfully.
+// this should also fire a Burn event, that may become standart in the future,
+// also there hsould be a burnAddress, that will hold burnt adddresses,
+// and in the totalSupply should always return totalSuppy-balanceOf(burnAddress)
+//
+}
+```
+
+Need to check if its possible to pay for transaction with balances of the contract, if so, need to make sure there is enough gas for transaction in the amount being transferred.
 
