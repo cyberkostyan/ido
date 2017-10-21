@@ -65,7 +65,9 @@ When TGE round is Live TGE settings *may not* be modified. The settings may only
 
 ```javascript
 function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
-// sends a request to change settings 
+// sends a request to change settings.
+// @returns index of the settings change request. other founders will confirm
+// the changes using this index.
 // example: tgeSettingsChangeRequest(1000, 10, 89, 1, 6000, 2);
 //
 }
