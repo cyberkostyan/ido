@@ -51,7 +51,7 @@ function setLive() {
 
 ```
 
-**Note:** On minting, do not forget to include the ERC20-compliant call to Transfer event so that many wallets and block explorers can see the tokens on balances of holders.
+> **Note:** On minting, do not forget to include the ERC20-compliant call to Transfer event so that many wallets and block explorers can see the tokens on balances of holders.
 
 TGE round ends according to specification. Either when the desired amount is raised (set by founders' multisig decision). Or the day comes when there is no tokens to project distributed to project multisig wallet.
 
