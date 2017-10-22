@@ -38,6 +38,14 @@ function multi_transfer(address[] dests, uint[] values) public returns (uint ok_
 }
 ```
 
+The constants for this project hsould be:
+
+```javascript
+name = "Annihilat.io Token";
+symbol = "ANNI";
+decimals = 18;
+```
+
 ## Minting
 The minting of tokens is automatic during crowdfunding rounds or how Swiss lawyers like to call them Token Generation Event rounds. The Token Generation Event (TGE) is either on or off.
 
