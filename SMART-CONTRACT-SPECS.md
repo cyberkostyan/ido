@@ -29,6 +29,15 @@ Make sure we have an alternative method in the token
 
 This is an alternative to *approve* without security issues.
 
+Another useful function I would like to be added: 
+
+```javascript
+function multi_transfer(address[] dests, uint[] values) public returns (uint ok_count) {
+   // This is useful to send tokens to multiple holders of wallet.
+   // returns number of transfers that succeded
+}
+```
+
 ## Minting
 The minting of tokens is automatic during crowdfunding rounds or how Swiss lawyers like to call them Token Generation Event rounds. The Token Generation Event (TGE) is either on or off.
 
