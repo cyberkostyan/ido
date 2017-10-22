@@ -1,8 +1,14 @@
-# Specs for Annihilat.io smart contract.
+# Specs for Annihilat.io Ethereum smart contract.
 
 ## Abstract.
 
 This smart contract will implement functionality of [Initial Development Offering](README.md) for contributing to Annihilat.io. This is basically an [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard) standart token with some additional functionality that gives the founders ability to settle developmers in tokens.
+
+## Motivation
+
+This token will be used solely as a means of payment, the total supply of the tokens will be transferred to the new blockchain created with proportional distribution of new cryptocurrency between holders of the token. Rather than settling in fiat currency I would like to settle with developers with tokens that are backed by ETH. 
+
+The distribution of new cryptocurrency will be hardcoded into new blockchain, and to claim it holders of the tokens will need their ethereum private keys that will also work with new blockchain we are creating.
 
 ## Specs
 
