@@ -150,7 +150,7 @@ Founders' multisig contract controls how each TGE round is setup by setting 4 pa
 When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
 
 ```javascript
-function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
+function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, partProjectDecreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
 // sends a request to change settings.
 // @returns index of the settings change request. other founders will confirm
 // the changes using this index.
@@ -236,7 +236,8 @@ uint public
      tgeSettingsPartProject,
      tgeSettingsPartFounders,
      tgeSettingsBlocksPerStage,
-     tgeSettingsRatioDecreasePerStage,
+     tgeSettingsPartProjectDecreasePerStage,
+     // extra properties to see current status of TGE round:
      tgeSettingsAmountCollect, // the amount of ETH collected so far in this round of TGE.
      tgeSettingsAmountLeft, // the amount of ETH left to collect in this round of TGE.     
      tgeCurrentPartProject, // current part to project
@@ -263,3 +264,5 @@ function tgeBlocksLeft() public returns (uint blocksLeft) {
 ```
 
 > Note: All the functions should be read only, public, and accessible from node for free.
+
+Also remember these are suggested ways to read things from contract. The actual implementation should be smarter.
