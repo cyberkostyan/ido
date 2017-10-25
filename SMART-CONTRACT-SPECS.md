@@ -231,11 +231,14 @@ function isLive() returns (bull live) {
 
 // standard tge properties:
 uint public 
+     tgeSettingsAmount,
      tgeSettingsPartSender,
      tgeSettingsPartProject,
      tgeSettingsPartFounders,
      tgeSettingsBlocksPerStage,
      tgeSettingsRatioDecreasePerStage,
+     tgeSettingsAmountCollect, // the amount of ETH collected so far in this round of TGE.
+     tgeSettingsAmountLeft, // the amount of ETH left to collect in this round of TGE.     
      tgeCurrentPartProject, // current part to project
      tgeNextPartProject; // part going to project in the next stage
                          // 0 if tge is not live, or it is last stage of tge
