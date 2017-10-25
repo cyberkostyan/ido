@@ -52,7 +52,7 @@ symbol = "ANNI";
 decimals = 18;
 ```
 
-## Minting
+## Minting (TGE)
 The minting of tokens is automatic during crowdfunding rounds or how Swiss lawyers like to call them Token Generation Event rounds. The Token Generation Event (TGE) is either on or off.
 
 ```javascript
@@ -218,3 +218,45 @@ function cancelGoLive() only(founder) public returns (bool success) {
     // @returns true if cancelled successfully, false otherwise (eg. ther was no request?)
 }
 ```
+
+## Status functions
+
+Smart contract should have API that allows to query the state of contract.
+
+```javascript
+function isLive() returns (bull live) {
+    // Is the mainnet live?
+    // if yes, the smart contract is frozen, and no transactions can take place.
+}
+
+// standard tge properties:
+uint public 
+     tgeSettingsPartSender,
+     tgeSettingsPartProject,
+     tgeSettingsPartFounders,
+     tgeSettingsBlocksPerStage,
+     tgeSettingsRatioDecreasePerStage,
+     tgeCurrentPartProject, // current part to project
+     tgeNextPartProject; // part going to project in the next stage
+                         // 0 if tge is not live, or it is last stage of tge
+     
+bool tgeLive; // is tge Live?
+     
+function tgeStageBlocksLeft() public returns (uint blocksLeft) {
+    // how many blocks left to the end of this stage of tge.
+}
+
+function tgeBlocksLeft() public returns (uint blocksLeft) {
+    // how many blocks left to the end of this stage of TGE.
+    // basically this is how many blocks left to the drop
+    // in token ratio going to project.
+}
+
+function tgeBlocksLeft() public returns (uint blocksLeft) {
+    // how many blocks left to the end of TGE round.
+    //
+}
+
+```
+
+> Note: All the functions should be read only, public, and accessible from node for free.
