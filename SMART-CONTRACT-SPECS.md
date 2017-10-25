@@ -6,7 +6,7 @@ This smart contract will implement functionality of [Initial Development Offerin
 
 ## Motivation
 
-This token will be used solely as a means of payment, the total supply of the tokens will be transferred to the new blockchain created with proportional distribution of new cryptocurrency between holders of the token. Rather than settling in fiat currency I would like to settle with developers with tokens that are backed by ETH. 
+This token will be used solely as a means of payment, the total supply of the tokens will be transferred to the new blockchain created with proportional distribution of new cryptocurrency between holders of the token. Rather than settling in fiat currency this project settle with contributors with tokens that are backed by ETH.
 
 The distribution of new cryptocurrency will be hardcoded into new blockchain, and to claim it holders of the tokens will need their ethereum private keys that will also work with new blockchain we are creating.
 
@@ -190,3 +190,12 @@ function burn(uint amount) public tgeNotLive returns (bool success) {
 
 Need to check if its possible to pay for transaction with balances of the contract, if so, need to make sure there is enough gas for transaction in the amount being transferred.
 
+## Going live
+
+The moment the annihilat.io project goes live with MainNet the state of the smart contract will be changed to "frozen":
+
+ 3. % of totalSupply of tokens will be distributed to project's multisig wallet account.
+ 1. All transfers of tokens will be frozen.
+ 2. All ether remaining in the project will be returned to investors proportionally to the amount of tokens they have originally received in exchange for ETH they have contributed.
+
+This will mean the start of Annihialt.io live network and a full stop for the smart contract. No TGE events can start nor tokens can be exchanged for Ether.
