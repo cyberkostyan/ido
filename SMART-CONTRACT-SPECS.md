@@ -199,3 +199,22 @@ The moment the annihilat.io project goes live with MainNet the state of the smar
  2. All ether remaining in the project will be returned to investors proportionally to the amount of tokens they have originally received in exchange for ETH they have contributed.
 
 This will mean the start of Annihialt.io live network and a full stop for the smart contract. No TGE events can start nor tokens can be exchanged for Ether.
+
+Going live is also controlled by multisig ofcourse.
+
+```javascript
+///
+function requestGoLive() only(founder) public returns (uint confirmationsLeft) {
+  // send go live request.
+}
+
+function confirmGoLive() only(founder) public returns (uint confirmationsLeft) {
+    // confirm going live
+    // @returns how many confirmations left. 0 if confiremd successfuly and 
+    // the MainNet is live now, all smartcontract transactions frozen, and
+}
+
+function cancelGoLive() only(founder) public returns (bool success) {
+    // @returns true if cancelled successfully, false otherwise (eg. ther was no request?)
+}
+```
