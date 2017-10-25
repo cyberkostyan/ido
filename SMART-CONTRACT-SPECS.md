@@ -115,6 +115,29 @@ function viewTransferDetails(uint _txIndex) returns (address _from, _to, approve
 
  ```
 
+Similar functionality to above should have transfer ownership from the multisig to ERC20 contract receipient. However in addition to regular transfer method there should be batch transfer method available to project's founders.
+
+```javascript
+contract ANNI is ERC20 {
+  funntion multi_transfer(address[] to, uint[] value) only(founders) public {
+      // calls multiple erc20 transfers for all addresses in array to
+      // we need this for speeding up distribution of tokens to contributors 
+  }
+}
+
+contract foundersMultiSig is MultiOwned{
+    function requestTransfers(address[] targetAddresses, uint[] amounts) only(founder) public returns(uint txId) {
+        // resquest a transfer by founder
+    }
+    function confirmTransfer(uint txId) only(founder) returns (bool success) {
+        // confirms previously intiated transfers
+    }
+    function viewTransfer(uint txId) only(founder) returns (address[] targetAddresses, uint[] amounts) {
+        // shows all transfers in the transfer request
+    }
+}
+```
+
 ## TGE settings.
 
 Founders' multisig contract controls how each TGE round is setup by setting 4 parameters.
