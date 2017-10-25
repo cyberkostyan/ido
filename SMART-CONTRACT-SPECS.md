@@ -260,7 +260,6 @@ function tgeBlocksLeft() public returns (uint blocksLeft) {
     // how many blocks left to the end of TGE round.
     //
 }
-
 ```
 
 > Note: All the functions should be read only, public, and accessible from node for free.
