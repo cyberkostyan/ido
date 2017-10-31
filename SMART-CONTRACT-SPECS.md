@@ -14,14 +14,18 @@ The distribution of new cryptocurrency will be hardcoded into new blockchain, an
 
 Tokens are backed by ethereum with a 1:1 ratio. When contributors are compensated for their work, token is transferred from project multisig wallet to contributor's wallet. Then contributors at any time they want can exchange the tokens for ETH kept in smart contract witha 1:1 ratio, at wich point the Tokens are burnt. As the amount of tokens issued must always be equal to amount of ETH in the contract. All transaction fees must be paid by caller of contract methods.
 
-If project wallet is empty (project out of tokens), founders (controlling multisig wallet) setup a new round of investment, they set a starting rate that investments are accepted at. E.g. 1:3. That means investor will get 1 token in exchange for 3 ether, and project multisig address will get 2 tokens. Founders also set maximum investment accepted for this round.
+If project wallet is empty (project out of tokens), founders (controlling multisig wallet) setup a new round of investment, they set a starting rate that investments are accepted at. E.g. 1:3. That means investor will get 1 token in exchange for 3 ether, and project multisig address will get 2 tokens. Founders also set maximum number of tokens for project to be minted for this round.
 
-Every day the rate is decrease by a certain amount. E.g 0.5... This means that the rate will be as follows:
-* day 1: 1:3 (investor 1 token, project 2 tokens for every 1 ETH invested)
-* day 2: 1:2.5 (investor 1 token, project 1.5 tokens for every 1 ETH invested)
-* day 3: 1:2 (investor 1 token, project 1 token for every 1 ETH invested)
-* day 4: 1:1.5 (investor 1 token, project 1.5 token for every 1 ETH invested)
-* day 5: the round is finished as for every ether invested, there is no tokens for project.
+Every day the amount of tokens investor receieves for every ether invested is increasing making it more attractive to wait another stage of the round, but in increasing the rist that someone will take an opportunity to invest early. Here is an example how the token distribution changes from one stage of investment round to another until the round is finished:
+
+* day 1: 10:50:10 (for every 70 ETH invested, 10 gets investor, 50 the project, 10 the founders)
+* day 2: 20:50:10 (for every 80 ETH invested, 20 gets investor, 50 the project, 10 the founders)
+* day 3: 30:50:10 (for every 90 ETH invested, 30 gets investor, 50 the project, 10 the founders)
+* day 4: 40:50:10 (for every 100 ETH invested, 40 gets investor, 50 the project, 10 the founders)
+....
+* day 1000: 50:50:10 (for every 10000 ETH invested, 9940 gets investor, 50 the project, 10 the founders)
+
+Once required number of tokens for the project is collected, investment round ends.
 
 ## ERC20
 
@@ -53,14 +57,14 @@ decimals = 18;
 ```
 
 ## Minting (TGE)
-The minting of tokens is automatic during crowdfunding rounds or how Swiss lawyers like to call them Token Generation Event rounds. The Token Generation Event (TGE) is either on or off.
+The minting of tokens is automatic during crowdfunding (investing) rounds or how Swiss lawyers like to call them Token Generation Event rounds. The Token Generation Event (TGE) is either on or off.
 
 ```javascript
 bool tgeLive = false;
 ```
-If TGE is not LIVE all ETH sent to contract is automatically sent back.
+If TGE is not LIVE all ETH sent to contract is automatically sent back. Autobouncing.
 
-If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed according to tgeSettings.
+If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed according to tgeSettings (as in example in the beginning of this document).
 
 TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send tokens to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
 
@@ -76,7 +80,7 @@ function setLive() {
 
 > **Note:** On minting, do not forget to include the ERC20-compliant call to Transfer event so that many wallets and block explorers can see the tokens on balances of holders.
 
-TGE round ends according to specification. Either when the desired amount is raised (set by founders' multisig decision). Or the day comes when there is no tokens to project distributed to project multisig wallet.
+TGE round ends when target amount of tokens for the project has been minted.
 
 ## Multisig
 
@@ -145,7 +149,7 @@ Founders' multisig contract controls how each TGE round is setup by setting 4 pa
 1. Amount in ETH/tokens to be raised.
 2. Starting ratio of TOKENS to invested ETH. (amount of tokens that goes to investor).
 3. Duration of each stage of round where ratio remains the same. (in number of blocks to make the pace more definite)
-4. The amount of multiplier being deducted from tokens going to project on each stage.
+4. The amount of multiplier being deducted from tokens going to investor on each stage.
 
 When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
 
