@@ -172,7 +172,7 @@ contract Token is ERC20 {
         require(!tgeLive);
         _;
     }
-    modifier targetDoesNotAchieved(){
+    modifier targetIsNotAchieved(){
         require(tgeSettingsAmountCollect < tgeSettingsAmount);
         _;
     }
@@ -190,7 +190,7 @@ contract Token is ERC20 {
     payable
     isTgeLive
     isNotFrozenOnly
-    targetDoesNotAchieved
+    targetIsNotAchieved
     {
         require(msg.value >= 1 ether);
         require(tgeSettingsAmountCollect.add(msg.value) <= tgeSettingsAmount);
@@ -201,15 +201,38 @@ contract Token is ERC20 {
         uint currentPartProject = tgeSettingsPartProject.sub(stage.mul(tgeSettingsPartProjectDecreasePerStage));
         uint currentPartFounders = tgeSettingsPartFounders.sub(stage.mul(tgeSettingsPartFoundersDecreasePerStage));
         uint allStakes = tgeSettingsPartSender.add(currentPartProject).add(currentPartFounders);
-        uint amountProject = msg.value.mul(currentPartFounders).div(allStakes);
+        uint amountProject = msg.value.mul(currentPartProject).div(allStakes);
         uint amountFounders = msg.value.mul(currentPartFounders).div(allStakes);
         uint amountSender = msg.value.sub(amountProject).sub(amountFounders);
+        // -------------------------------------------
+        // move the below to internal "mint" function
+        // the function should have Transfer event for
+        // and where is the totalSupply.add() ????
+        // -------------------------------------------
         balances[projectWallet] = balances[projectWallet].add(amountProject);
         balances[foundersWallet] = balances[foundersWallet].add(amountFounders);
         balances[msg.sender] = balances[msg.sender].add(amountSender);
+      
+        // -------------------------------------------
+        // Can we send back unneeded Ether? 
+        // Let's say we have tgeSettingsAmountLeft = 1.5
+        // and msg.value = 2
+        // we want to leave 1.5 with contract, and give 0.5 change
+        // back to msg.sender
+        //
+        // If this is not possible, we need to send the Eth back.
+        // 
+        // Also 
+        // if (tgeSettingsAmountLeft < 1 eth) {
+        //   we need to close tge round  
+        //}-------------------------------------------
         tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(msg.value);
         tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
-        Transfer(0x0, msg.sender, amountSender);
+        // -------------------------------------------
+        // what is this???
+        // we need to fire this for every "mint"
+        // -------------------------------------------
+        // Transfer(0x0, msg.sender, amountSender);
     }
     function setLive()
     public
