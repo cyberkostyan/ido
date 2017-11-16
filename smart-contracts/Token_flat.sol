@@ -181,10 +181,14 @@ contract Token is ERC20 {
         _;
     }
     event Burn(address indexed _owner,  uint _value);
+    /// @dev Constructor
+    /// @param _projectWallet Wallet of project
+    /// @param _foundersWallet Wallet of founders
     function Token(address _projectWallet, address _foundersWallet){
         projectWallet = _projectWallet;
         foundersWallet = _foundersWallet;
     }
+    /// @dev Fallback function allows to buy tokens
     function ()
     public
     payable
@@ -194,7 +198,8 @@ contract Token is ERC20 {
     {
         require(msg.value >= 1 ether);
         require(tgeSettingsAmountCollect.add(msg.value) <= tgeSettingsAmount);
-        if(tgeSettingsAmountCollect.add(msg.value) == tgeSettingsAmount){
+        require(tgeSettingsAmountLeft >= msg.value);
+        if(tgeSettingsAmountCollect.add(msg.value) == tgeSettingsAmount || tgeSettingsAmountLeft < BIT){
             _finishTge();
         }
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
@@ -204,36 +209,9 @@ contract Token is ERC20 {
         uint amountProject = msg.value.mul(currentPartProject).div(allStakes);
         uint amountFounders = msg.value.mul(currentPartFounders).div(allStakes);
         uint amountSender = msg.value.sub(amountProject).sub(amountFounders);
-        // -------------------------------------------
-        // move the below to internal "mint" function
-        // the function should have Transfer event for
-        // and where is the totalSupply.add() ????
-        // -------------------------------------------
-        balances[projectWallet] = balances[projectWallet].add(amountProject);
-        balances[foundersWallet] = balances[foundersWallet].add(amountFounders);
-        balances[msg.sender] = balances[msg.sender].add(amountSender);
-      
-        // -------------------------------------------
-        // Can we send back unneeded Ether? 
-        // Let's say we have tgeSettingsAmountLeft = 1.5
-        // and msg.value = 2
-        // we want to leave 1.5 with contract, and give 0.5 change
-        // back to msg.sender
-        //
-        // If this is not possible, we need to send the Eth back.
-        // 
-        // Also 
-        // if (tgeSettingsAmountLeft < 1 eth) {
-        //   we need to close tge round  
-        //}-------------------------------------------
-        tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(msg.value);
-        tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
-        // -------------------------------------------
-        // what is this???
-        // we need to fire this for every "mint"
-        // -------------------------------------------
-        // Transfer(0x0, msg.sender, amountSender);
+        _mint(amountProject, amountFounders, amountSender);
     }
+    /// @dev Start new tge stage
     function setLive()
     public
     only(projectWallet)
@@ -245,6 +223,8 @@ contract Token is ERC20 {
         tgeSettingsAmountLeft = tgeSettingsAmount;
         tgeSettingsAmountCollect = 0;
     }
+    /// @dev Burn tokens to burnAddress from msg.sender wallet
+    /// @param _amount Amount of tokens
     function burn(uint _amount)
     public 
     isNotTgeLive
@@ -256,6 +236,9 @@ contract Token is ERC20 {
         Burn(msg.sender, _amount);
         return true;
     }
+    /// @dev _foundersWallet Wallet of founders
+    /// @param dests array of addresses 
+    /// @param values array amount of tokens to transfer    
     function multiTransfer(address[] dests, uint[] values) 
     public 
     isNotFrozenOnly
@@ -269,6 +252,8 @@ contract Token is ERC20 {
         return i;
     }
     //---------------- FROZEN -----------------
+    /// @dev Allows an owner to confirm goLive process
+    /// @return Confirmation status
     function confirmGoLive()
     public
     onlyOwners
@@ -283,6 +268,8 @@ contract Token is ERC20 {
             return false;
         }
     }
+    
+    /// @dev Allows an owner to cancel confirmation
     function cancelGoLive()
     public
     onlyOwners
@@ -292,6 +279,8 @@ contract Token is ERC20 {
         frozenConfirms[msg.sender] = false;
         return true;
     }
+    /// @dev Returns the confirmation status of goLive process.
+    /// @return Confirmation status.
     function isConfirmedFrozenRequest()
     public
     constant
@@ -306,6 +295,7 @@ contract Token is ERC20 {
         }
         return false;
     }
+    /// @dev Allows to users withdraw eth in frozen stage 
     function withdrawFrozen()
     public
     isFrozenOnly
@@ -316,6 +306,8 @@ contract Token is ERC20 {
         msg.sender.transfer(amountWithdraw);
     }
     //---------------- TGE SETTINGS -----------
+    /// @dev Sends request to change settings
+    /// @return Transaction ID
     function tgeSettingsChangeRequest(
         uint amount, 
         uint partSender,
@@ -345,6 +337,8 @@ contract Token is ERC20 {
         settingsRequestsCount++;
         return _txIndex;
     }
+    /// @dev Allows an owner to confirm a change settings request.
+    /// @param _txIndex Transaction ID.
     function confirmSettingsChange(uint _txIndex) 
     public
     onlyOwners
@@ -381,6 +375,7 @@ contract Token is ERC20 {
         }
         return false;
     }
+    /// @dev Shows what settings were requested in a settings change request
     function viewSettingsChange(uint _txIndex) 
     public
     onlyOwners 
@@ -398,6 +393,7 @@ contract Token is ERC20 {
         );
     }
     //---------------- GETTERS ----------------
+    /// @dev Amount of blocks left to the end of this stage of TGE 
     function tgeStageBlockLeft() 
     public 
     isTgeLive
@@ -411,5 +407,16 @@ contract Token is ERC20 {
     internal
     {
         tgeLive = false;
+    }
+    function _mint(uint _amountProject, uint _amountFounders, uint _amountSender)
+    internal
+    {
+        balances[projectWallet] = balances[projectWallet].add(_amountProject);
+        balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
+        balances[msg.sender] = balances[msg.sender].add(_amountSender);
+        tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(msg.value);
+        tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
+        totalSupply = totalSupply.add(msg.value);
+        Transfer(0x0, msg.sender, _amountSender);
     }
 }
