@@ -66,7 +66,7 @@ If TGE is not LIVE all ETH sent to contract is automatically sent back. Autoboun
 
 If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed according to tgeSettings (as in example in the beginning of this document).
 
-TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send tokens to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
+TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send ETH to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
 
 ```javascript
 function setLive() {
