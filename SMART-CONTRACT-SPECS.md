@@ -18,7 +18,7 @@ If project wallet is empty (project out of tokens), founders (controlling multis
 
 Every day the amount of tokens investor receieves for every ether invested is increasing making it more attractive to wait another stage of the round, but in increasing the rist that someone will take an opportunity to invest early. Here is an example how the token distribution changes from one stage of investment round to another until the round is finished:
 
-* day 1: 10:50:10 (for every 70 ETH invested, 10 gets investor, 50 the project, 10 the founders)
+* day 1: 10:50:10 (for every 70 ETH invested, 10 tokens gets investor, 50 tokens gets the project, 10 tokens gets the founders)
 * day 2: 20:50:10 (for every 80 ETH invested, 20 gets investor, 50 the project, 10 the founders)
 * day 3: 30:50:10 (for every 90 ETH invested, 30 gets investor, 50 the project, 10 the founders)
 * day 4: 40:50:10 (for every 100 ETH invested, 40 gets investor, 50 the project, 10 the founders)
