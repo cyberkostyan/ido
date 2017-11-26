@@ -242,10 +242,11 @@ uint public
      tgeSettingsBlocksPerStage,
      tgeSettingsPartInvestorIncreasePerStage,
      // extra properties to see current status of TGE round:
-     tgeSettingsAmountCollected, // the amount of ETH collected so far in this round of TGE.
-     tgeSettingsAmountLeft, // the amount of ETH left to collect in this round of TGE.     
+     tgeAmountCollected, // the amount of ETH collected so far in this round of TGE.
+     tgeAmountLeft, // the amount of ETH left to collect in this round of TGE.     
      tgeCurrentPartInvestor, // current part to investor
-     tgeNextPartInvestor; // part going to investor in the next stage
+     tgeNextPartInvestor, // part going to investor in the next stage
+     tgeCurrentStage; // Current stage number, starts with "1"
      
 bool tgeLive; // is tge Live?
 
@@ -253,11 +254,6 @@ function tgeStageBlocksLeft() public returns (uint blocksLeft) {
     // how many blocks left to the end of this stage of TGE.
     // basically this is how many blocks left to the drop
     // in token ratio going to project.
-}
-
-function tgeRoundBlocksLeft() public returns (uint blocksLeft) {
-    // how many blocks left to the end of TGE round.
-    //
 }
 
 ```
