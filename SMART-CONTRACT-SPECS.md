@@ -242,7 +242,7 @@ uint public
      tgeSettingsBlocksPerStage,
      tgeSettingsPartInvestorIncreasePerStage,
      // extra properties to see current status of TGE round:
-     tgeSettingsAmountCollect, // the amount of ETH collected so far in this round of TGE.
+     tgeSettingsAmountCollected, // the amount of ETH collected so far in this round of TGE.
      tgeSettingsAmountLeft, // the amount of ETH left to collect in this round of TGE.     
      tgeCurrentPartInvestor, // current part to investor
      tgeNextPartInvestor; // part going to investor in the next stage
