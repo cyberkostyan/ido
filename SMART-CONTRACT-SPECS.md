@@ -248,23 +248,26 @@ uint public
      tgeNextPartInvestor; // part going to investor in the next stage
      
 bool tgeLive; // is tge Live?
-     
-function tgeStageBlocksLeft() public returns (uint blocksLeft) {
-    // how many blocks left to the end of this stage of tge.
-}
 
-function tgeBlocksLeft() public returns (uint blocksLeft) {
+function tgeStageBlocksLeft() public returns (uint blocksLeft) {
     // how many blocks left to the end of this stage of TGE.
     // basically this is how many blocks left to the drop
     // in token ratio going to project.
 }
 
-function tgeBlocksLeft() public returns (uint blocksLeft) {
+function tgeRoundBlocksLeft() public returns (uint blocksLeft) {
     // how many blocks left to the end of TGE round.
     //
 }
+
 ```
 
 > Note: All the functions should be read only, public, and accessible from node for free.
 
 Also remember these are suggested ways to read things from contract. The actual implementation should be smarter.
+
+
+Example round of tge:
+| block # | ETH received | PartInvestor | PartProject | PartFounders | TokensInvestor | TokensProject | TokensFounders | AmountCollected | AmountLeft |
+| 100 | 15 | 25 | 50 | 50 | 3,00 | 6,00 | 6,00 | 15 | 985 |
+| 310 | 15 | 25 | 50 | 50 | 3,00 | 6,00 | 6,00 | 30 | 970 |
