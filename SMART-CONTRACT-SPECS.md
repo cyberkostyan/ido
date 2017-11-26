@@ -269,5 +269,6 @@ Also remember these are suggested ways to read things from contract. The actual 
 
 Example round of tge:
 | block # | ETH received | PartInvestor | PartProject | PartFounders | TokensInvestor | TokensProject | TokensFounders | AmountCollected | AmountLeft |
+|----:|---: |---:|---:|---:|---:|---:|---:|---:|---:|
 | 100 | 15 | 25 | 50 | 50 | 3,00 | 6,00 | 6,00 | 15 | 985 |
 | 310 | 15 | 25 | 50 | 50 | 3,00 | 6,00 | 6,00 | 30 | 970 |
