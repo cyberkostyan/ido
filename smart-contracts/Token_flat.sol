@@ -214,7 +214,7 @@ contract Token is ERC20 {
             currentPartFounders = 0;
         }
         
-        uint currentPartInvestor = tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        uint currentPartInvestor = tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
         uint allStakes = currentPartInvestor.add(currentPartProject).add(currentPartFounders);
         uint amountProject = senderAmount.mul(currentPartProject).div(allStakes);
         uint amountFounders = senderAmount.mul(currentPartFounders).div(allStakes);
@@ -336,7 +336,7 @@ contract Token is ERC20 {
     returns(uint)
     {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);        
-        return tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
     function tgeNextPartInvestor()
     public
