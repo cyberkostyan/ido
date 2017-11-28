@@ -18,7 +18,7 @@ If project wallet is empty (project out of tokens), founders (controlling multis
 
 Every day the amount of tokens investor receieves for every ether invested is increasing making it more attractive to wait another stage of the round, but in increasing the rist that someone will take an opportunity to invest early. Here is an example how the token distribution changes from one stage of investment round to another until the round is finished:
 
-* day 1: 10:50:10 (for every 70 ETH invested, 10 gets investor, 50 the project, 10 the founders)
+* day 1: 10:50:10 (for every 70 ETH invested, 10 tokens gets investor, 50 tokens gets the project, 10 tokens gets the founders)
 * day 2: 20:50:10 (for every 80 ETH invested, 20 gets investor, 50 the project, 10 the founders)
 * day 3: 30:50:10 (for every 90 ETH invested, 30 gets investor, 50 the project, 10 the founders)
 * day 4: 40:50:10 (for every 100 ETH invested, 40 gets investor, 50 the project, 10 the founders)
@@ -66,7 +66,7 @@ If TGE is not LIVE all ETH sent to contract is automatically sent back. Autoboun
 
 If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of tokens is generated. They are generated and distributed according to tgeSettings (as in example in the beginning of this document).
 
-TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send tokens to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
+TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send ETH to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
 
 ```javascript
 function setLive() {
@@ -236,36 +236,59 @@ function isLive() returns (bull live) {
 // standard tge properties:
 uint public 
      tgeSettingsAmount,
-     tgeSettingsPartSender,
+     tgeSettingsPartInvestor,
      tgeSettingsPartProject,
      tgeSettingsPartFounders,
      tgeSettingsBlocksPerStage,
-     tgeSettingsPartProjectDecreasePerStage,
+     tgeSettingsPartInvestorIncreasePerStage,
      // extra properties to see current status of TGE round:
-     tgeSettingsAmountCollect, // the amount of ETH collected so far in this round of TGE.
-     tgeSettingsAmountLeft, // the amount of ETH left to collect in this round of TGE.     
-     tgeCurrentPartProject, // current part to project
-     tgeNextPartProject; // part going to project in the next stage
-                         // 0 if tge is not live, or it is last stage of tge
+     tgeAmountCollected, // the amount of ETH collected so far in this round of TGE.
+     tgeAmountLeft, // the amount of ETH left to collect in this round of TGE.     
+     tgeCurrentPartInvestor, // current part to investor
+     tgeNextPartInvestor, // part going to investor in the next stage
+     tgeCurrentStage; // Current stage number, starts with "1"
      
 bool tgeLive; // is tge Live?
-     
-function tgeStageBlocksLeft() public returns (uint blocksLeft) {
-    // how many blocks left to the end of this stage of tge.
-}
 
-function tgeBlocksLeft() public returns (uint blocksLeft) {
+function tgeStageBlocksLeft() public returns (uint blocksLeft) {
     // how many blocks left to the end of this stage of TGE.
     // basically this is how many blocks left to the drop
     // in token ratio going to project.
 }
 
-function tgeBlocksLeft() public returns (uint blocksLeft) {
-    // how many blocks left to the end of TGE round.
-    //
-}
 ```
 
 > Note: All the functions should be read only, public, and accessible from node for free.
 
 Also remember these are suggested ways to read things from contract. The actual implementation should be smarter.
+
+## Example
+
+Example round of tge with the following tge settings:
+ * tgeSettingsAmount	1000
+ * tgeSettingsPartInvestor	25
+ * tgeSettingsPartProject	50
+ * tgeSettingsPartFounders	50
+ * tgeSettingsBlocksPerStage	1000
+ * tgeSettingsPartInvestorIncreasePerStage	25
+
+| block # | ETH received | PartInvestor | PartProject | PartFounders | TokensInvestor | TokensProject | TokensFounders | AmountCollected | AmountLeft |
+|-------:|------:|------:| ------:|------:|------:|------:|------:|------:|------:|
+| 100 | 95 | 25 | 50 | 50 | 19,00 | 38,00 | 38,00 | 95 | 905 |
+| 288 | 48 | 25 | 50 | 50 | 9,60 | 19,20 | 19,20 | 143 | 857 |
+| 472 | 63 | 25 | 50 | 50 | 12,60 | 25,20 | 25,20 | 206 | 794 |
+| 623 | 96 | 25 | 50 | 50 | 19,20 | 38,40 | 38,40 | 302 | 698 |
+| 815 | 13 | 25 | 50 | 50 | 2,60 | 5,20 | 5,20 | 315 | 685 |
+| 851 | 76 | 25 | 50 | 50 | 15,20 | 30,40 | 30,40 | 391 | 609 |
+| 1015 | 73 | 50 | 50 | 50 | 24,33 | 24,33 | 24,33 | 464 | 536 |
+| 1020 | 34 | 50 | 50 | 50 | 11,33 | 11,33 | 11,33 | 498 | 502 |
+| 1133 | 61 | 50 | 50 | 50 | 20,33 | 20,33 | 20,33 | 559 | 441 |
+| 1331 | 83 | 50 | 50 | 50 | 27,67 | 27,67 | 27,67 | 642 | 358 |
+| 1612 | 17 | 50 | 50 | 50 | 5,67 | 5,67 | 5,67 | 659 | 341 |
+| 1644 | 81 | 50 | 50 | 50 | 27,00 | 27,00 | 27,00 | 740 | 260 |
+| 1719 | 69 | 50 | 50 | 50 | 23,00 | 23,00 | 23,00 | 809 | 191 |
+| 1941 | 72 | 50 | 50 | 50 | 24,00 | 24,00 | 24,00 | 881 | 119 |
+| 2108 | 40 | 75 | 50 | 50 | 17,14 | 11,43 | 11,43 | 921 | 79 |
+| 2147 | 65 | 75 | 50 | 50 | 27,86 | 18,57 | 18,57 | 986 | 14 |
+| 2155 | 43 | 75 | 50 | 50 | 6,00 | 4,00 | 4,00 | 1000 | 0 |
+
