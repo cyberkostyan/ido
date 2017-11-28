@@ -56,9 +56,9 @@ contract MultiSigWallet {
     }
     modifier validRequirement(uint ownerCount, uint _required) {
         require(ownerCount < MAX_OWNER_COUNT
-            || _required < ownerCount
-            || _required != 0
-            || ownerCount != 0);
+            && _required <= ownerCount
+            && _required != 0
+            && ownerCount != 0);
         _;
     }
     /// @dev Fallback function allows to deposit ether.

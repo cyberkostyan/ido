@@ -1,4 +1,26 @@
 pragma solidity ^0.4.15;
+library SafeMath {
+    function mul(uint256 a, uint256 b) internal constant returns (uint256) {
+        uint256 c = a * b;
+        assert(a == 0 || c / a == b);
+        return c;
+    }
+    function div(uint256 a, uint256 b) internal constant returns (uint256) {
+        // assert(b > 0); // Solidity automatically throws when dividing by 0
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return c;
+    }
+    function sub(uint256 a, uint256 b) internal constant returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
+    function add(uint256 a, uint256 b) internal constant returns (uint256) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
+}
 contract Base {
     modifier only(address allowed) {
         require(msg.sender == allowed);
@@ -28,22 +50,7 @@ contract Base {
     }
     modifier reentrant { _; }
 }
-contract Owned is Base {
-    address public owner;
-    address newOwner;
-    function Owned() {
-        owner = msg.sender;
-    }
-    function transferOwnership(address _newOwner) only(owner) {
-        newOwner = _newOwner;
-    }
-    function acceptOwnership() only(newOwner) {
-        OwnershipTransferred(owner, newOwner);
-        owner = newOwner;
-    }
-    event OwnershipTransferred(address indexed _from, address indexed _to);
-}
-contract ERC20 is Owned {
+contract ERC20 is Base {
     using SafeMath for uint;
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
@@ -99,28 +106,6 @@ contract ERC20 is Owned {
         _;
     }
 }
-library SafeMath {
-    function mul(uint256 a, uint256 b) internal constant returns (uint256) {
-        uint256 c = a * b;
-        assert(a == 0 || c / a == b);
-        return c;
-    }
-    function div(uint256 a, uint256 b) internal constant returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-    function sub(uint256 a, uint256 b) internal constant returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-    function add(uint256 a, uint256 b) internal constant returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
-}
 contract Token is ERC20 {
     string public name = "Annihilat.io Token";
     string public symbol = "ANNI";
@@ -131,16 +116,15 @@ contract Token is ERC20 {
     bool frozen = false;
     uint tgeStartBlock;
     uint public tgeSettingsAmount;
-    uint public tgeSettingsPartSender;
+    uint public tgeSettingsPartInvestor;
     uint public tgeSettingsPartProject;
     uint public tgeSettingsPartFounders;
     uint public tgeSettingsBlocksPerStage;
     uint public tgeSettingsPartProjectDecreasePerStage;
     uint public tgeSettingsPartFoundersDecreasePerStage;
+    uint public tgeSettingsPartInvestorIncreasePerStage;
     uint public tgeSettingsAmountCollect;
     uint public tgeSettingsAmountLeft;
-    uint public tgeCurrentPartProject;
-    uint public tgeNextPartProject;
     uint tgeStackSender;
     uint tgeStackProject;
     uint tgeStackFounders;
@@ -153,12 +137,13 @@ contract Token is ERC20 {
     struct SettingsRequest 
     {
         uint amount;
-        uint partSender;
+        uint partInvestor;
         uint partProject;
         uint partFounders;
         uint blocksPerStage;
         uint partProjectDecreasePerStage;
         uint partFoundersDecreasePerStage;
+        uint partInvestorIncreasePerStage;
         bool executed;
         mapping(address => bool) confirmations;
     }
@@ -184,9 +169,14 @@ contract Token is ERC20 {
     /// @dev Constructor
     /// @param _projectWallet Wallet of project
     /// @param _foundersWallet Wallet of founders
-    function Token(address _projectWallet, address _foundersWallet){
+    function Token(address _projectWallet, address _foundersWallet, address[] _owners){
         projectWallet = _projectWallet;
         foundersWallet = _foundersWallet;
+        for (uint i=0; i<_owners.length; i++) {
+            require(!isOwner[_owners[i]] && _owners[i] != 0);
+            isOwner[_owners[i]] = true;
+        }
+        owners = _owners;
     }
     /// @dev Fallback function allows to buy tokens
     function ()
@@ -195,21 +185,42 @@ contract Token is ERC20 {
     isTgeLive
     isNotFrozenOnly
     targetIsNotAchieved
+    noAnyReentrancy
     {
-        require(msg.value >= 1 ether);
-        require(tgeSettingsAmountCollect.add(msg.value) <= tgeSettingsAmount);
-        require(tgeSettingsAmountLeft >= msg.value);
-        if(tgeSettingsAmountCollect.add(msg.value) == tgeSettingsAmount || tgeSettingsAmountLeft < BIT){
+        require(msg.value > 0);
+        if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount || tgeSettingsAmountLeft < BIT){
             _finishTge();
         }
+        uint refundAmount = 0;
+        uint senderAmount = msg.value;
+        if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
+            refundAmount = tgeSettingsAmountCollect.add(msg.value).sub(tgeSettingsAmount);
+            senderAmount = msg.value.sub(refundAmount);
+        }
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
-        uint currentPartProject = tgeSettingsPartProject.sub(stage.mul(tgeSettingsPartProjectDecreasePerStage));
-        uint currentPartFounders = tgeSettingsPartFounders.sub(stage.mul(tgeSettingsPartFoundersDecreasePerStage));
-        uint allStakes = tgeSettingsPartSender.add(currentPartProject).add(currentPartFounders);
-        uint amountProject = msg.value.mul(currentPartProject).div(allStakes);
-        uint amountFounders = msg.value.mul(currentPartFounders).div(allStakes);
-        uint amountSender = msg.value.sub(amountProject).sub(amountFounders);
+        uint tmpPartProject = stage.mul(tgeSettingsPartProjectDecreasePerStage);
+        uint tmpPartFounders = stage.mul(tgeSettingsPartFoundersDecreasePerStage);
+        uint currentPartProject;
+        if(tgeSettingsPartProject > tmpPartProject){
+            currentPartProject = tgeSettingsPartProject.sub(tmpPartProject);
+        } else {
+            currentPartProject = 0;
+        }
+        
+        uint currentPartFounders;
+        if(tgeSettingsPartFounders > tmpPartFounders){
+            currentPartFounders = tgeSettingsPartFounders.sub(tmpPartFounders);
+        } else {
+            currentPartFounders = 0;
+        }
+        
+        uint currentPartInvestor = tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        uint allStakes = currentPartInvestor.add(currentPartProject).add(currentPartFounders);
+        uint amountProject = senderAmount.mul(currentPartProject).div(allStakes);
+        uint amountFounders = senderAmount.mul(currentPartFounders).div(allStakes);
+        uint amountSender = senderAmount.sub(amountProject).sub(amountFounders);
         _mint(amountProject, amountFounders, amountSender);
+        msg.sender.transfer(refundAmount);
     }
     /// @dev Start new tge stage
     function setLive()
@@ -233,6 +244,7 @@ contract Token is ERC20 {
     {
         require(balances[msg.sender] >= _amount);
         transfer(burnAddress, _amount);
+        msg.sender.transfer(_amount);
         Burn(msg.sender, _amount);
         return true;
     }
@@ -242,6 +254,7 @@ contract Token is ERC20 {
     function multiTransfer(address[] dests, uint[] values) 
     public 
     isNotFrozenOnly
+    only(projectWallet)
     returns(uint) 
     {
         uint i = 0;
@@ -302,7 +315,9 @@ contract Token is ERC20 {
     noAnyReentrancy
     {
         require(balances[msg.sender] > 0);
+        
         uint amountWithdraw = address(this).balance.mul(balances[msg.sender]).div(totalSupply);        
+        balances[msg.sender] = 0;
         msg.sender.transfer(amountWithdraw);
     }
     //---------------- TGE SETTINGS -----------
@@ -310,12 +325,13 @@ contract Token is ERC20 {
     /// @return Transaction ID
     function tgeSettingsChangeRequest(
         uint amount, 
-        uint partSender,
+        uint partInvestor,
         uint partProject, 
         uint partFounders, 
         uint blocksPerStage, 
         uint partProjectDecreasePerStage,
-        uint partFoundersDecreasePerStage
+        uint partFoundersDecreasePerStage,
+        uint partInvestorIncreasePerStage
     ) 
     public
     onlyOwners
@@ -326,12 +342,13 @@ contract Token is ERC20 {
         _txIndex = settingsRequestsCount;
         settingsRequests[_txIndex] = SettingsRequest({
             amount: amount,
-            partSender: partSender,
+            partInvestor: partInvestor,
             partProject: partProject,
             partFounders: partFounders,
             blocksPerStage: blocksPerStage,
             partProjectDecreasePerStage: partProjectDecreasePerStage,
             partFoundersDecreasePerStage: partFoundersDecreasePerStage,
+            partInvestorIncreasePerStage: partInvestorIncreasePerStage,
             executed: false
         });
         settingsRequestsCount++;
@@ -350,12 +367,13 @@ contract Token is ERC20 {
             SettingsRequest storage request = settingsRequests[_txIndex];
             request.executed = true;
             tgeSettingsAmount = request.amount;
-            tgeSettingsPartSender = request.partSender;
+            tgeSettingsPartInvestor = request.partInvestor;
             tgeSettingsPartProject = request.partProject;
             tgeSettingsPartFounders = request.partFounders;
             tgeSettingsBlocksPerStage = request.blocksPerStage;
             tgeSettingsPartProjectDecreasePerStage = request.partProjectDecreasePerStage;
             tgeSettingsPartFoundersDecreasePerStage = request.partFoundersDecreasePerStage;
+            tgeSettingsPartInvestorIncreasePerStage = request.partInvestorIncreasePerStage;
             return true;
         } else {
             return false;
@@ -380,16 +398,17 @@ contract Token is ERC20 {
     public
     onlyOwners 
     isNotTgeLive 
-    returns (uint amount, uint partSender, uint partProject, uint partFounders, uint blocksPerStage, uint partProjectDecreasePerStage, uint partFoundersDecreasePerStage) {
+    returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partProjectDecreasePerStage, uint partFoundersDecreasePerStage, uint partInvestorIncreasePerStage) {
         SettingsRequest storage request = settingsRequests[_txIndex];
         return (
             request.amount,
-            request.partSender, 
+            request.partInvestor, 
             request.partProject,
             request.partFounders,
             request.blocksPerStage,
             request.partProjectDecreasePerStage,
-            request.partFoundersDecreasePerStage
+            request.partFoundersDecreasePerStage,
+            request.partInvestorIncreasePerStage
         );
     }
     //---------------- GETTERS ----------------
@@ -401,6 +420,12 @@ contract Token is ERC20 {
     {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);
         return tgeStartBlock.add(stage.mul(tgeSettingsBlocksPerStage)).sub(block.number);
+    }
+    function isLive()
+    public
+    returns(bool)
+    {
+        return isFrozen;
     }
     //---------------- INTERNAL ---------------
     function _finishTge()
