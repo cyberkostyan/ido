@@ -188,7 +188,7 @@ contract Token is ERC20 {
     noAnyReentrancy
     {
         require(msg.value > 0);
-        if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount || tgeSettingsAmountLeft < BIT){
+        if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
             _finishTge();
         }
         uint refundAmount = 0;
@@ -254,7 +254,6 @@ contract Token is ERC20 {
     function multiTransfer(address[] dests, uint[] values) 
     public 
     isNotFrozenOnly
-    only(projectWallet)
     returns(uint) 
     {
         uint i = 0;
@@ -267,46 +266,14 @@ contract Token is ERC20 {
     //---------------- FROZEN -----------------
     /// @dev Allows an owner to confirm goLive process
     /// @return Confirmation status
-    function confirmGoLive()
+    function goLive()
     public
-    onlyOwners
+    only(projectWallet)
     isNotFrozenOnly
     returns (bool)
     {
-        frozenConfirms[msg.sender] = true;
-        if(isConfirmedFrozenRequest()){
-            isFrozen = true;
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    /// @dev Allows an owner to cancel confirmation
-    function cancelGoLive()
-    public
-    onlyOwners
-    isNotFrozenOnly
-    returns (bool)
-    {
-        frozenConfirms[msg.sender] = false;
+        isFrozen = true;
         return true;
-    }
-    /// @dev Returns the confirmation status of goLive process.
-    /// @return Confirmation status.
-    function isConfirmedFrozenRequest()
-    public
-    constant
-    returns (bool)
-    {
-        uint count = 0;
-        for (uint i = 0; i < owners.length; i++) {
-            if (frozenConfirms[owners[i]])
-                count += 1;
-            if (count == owners.length)
-                return true;
-        }
-        return false;
     }
     /// @dev Allows to users withdraw eth in frozen stage 
     function withdrawFrozen()
@@ -320,10 +287,8 @@ contract Token is ERC20 {
         balances[msg.sender] = 0;
         msg.sender.transfer(amountWithdraw);
     }
-    //---------------- TGE SETTINGS -----------
-    /// @dev Sends request to change settings
-    /// @return Transaction ID
-    function tgeSettingsChangeRequest(
+    /// @dev Allows an owner to confirm a change settings request.
+    function executeSettingsChange(
         uint amount, 
         uint partInvestor,
         uint partProject, 
@@ -334,82 +299,20 @@ contract Token is ERC20 {
         uint partInvestorIncreasePerStage
     ) 
     public
-    onlyOwners
-    isNotTgeLive
-    isNotFrozenOnly
-    returns (uint _txIndex) 
-    {
-        _txIndex = settingsRequestsCount;
-        settingsRequests[_txIndex] = SettingsRequest({
-            amount: amount,
-            partInvestor: partInvestor,
-            partProject: partProject,
-            partFounders: partFounders,
-            blocksPerStage: blocksPerStage,
-            partProjectDecreasePerStage: partProjectDecreasePerStage,
-            partFoundersDecreasePerStage: partFoundersDecreasePerStage,
-            partInvestorIncreasePerStage: partInvestorIncreasePerStage,
-            executed: false
-        });
-        settingsRequestsCount++;
-        return _txIndex;
-    }
-    /// @dev Allows an owner to confirm a change settings request.
-    /// @param _txIndex Transaction ID.
-    function confirmSettingsChange(uint _txIndex) 
-    public
-    onlyOwners
+    only(projectWallet)
     isNotTgeLive 
     isNotFrozenOnly
-    returns(bool success) {
-        settingsRequests[_txIndex].confirmations[msg.sender] = true;
-        if(isConfirmedSettingsRequest(_txIndex)){
-            SettingsRequest storage request = settingsRequests[_txIndex];
-            request.executed = true;
-            tgeSettingsAmount = request.amount;
-            tgeSettingsPartInvestor = request.partInvestor;
-            tgeSettingsPartProject = request.partProject;
-            tgeSettingsPartFounders = request.partFounders;
-            tgeSettingsBlocksPerStage = request.blocksPerStage;
-            tgeSettingsPartProjectDecreasePerStage = request.partProjectDecreasePerStage;
-            tgeSettingsPartFoundersDecreasePerStage = request.partFoundersDecreasePerStage;
-            tgeSettingsPartInvestorIncreasePerStage = request.partInvestorIncreasePerStage;
-            return true;
-        } else {
-            return false;
-        }
-    }
-    function isConfirmedSettingsRequest(uint transactionId)
-    public
-    constant
-    returns (bool)
+    returns(bool success) 
     {
-        uint count = 0;
-        for (uint i = 0; i < owners.length; i++) {
-            if (settingsRequests[transactionId].confirmations[owners[i]])
-                count += 1;
-            if (count == owners.length)
-                return true;
-        }
-        return false;
-    }
-    /// @dev Shows what settings were requested in a settings change request
-    function viewSettingsChange(uint _txIndex) 
-    public
-    onlyOwners 
-    isNotTgeLive 
-    returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partProjectDecreasePerStage, uint partFoundersDecreasePerStage, uint partInvestorIncreasePerStage) {
-        SettingsRequest storage request = settingsRequests[_txIndex];
-        return (
-            request.amount,
-            request.partInvestor, 
-            request.partProject,
-            request.partFounders,
-            request.blocksPerStage,
-            request.partProjectDecreasePerStage,
-            request.partFoundersDecreasePerStage,
-            request.partInvestorIncreasePerStage
-        );
+        tgeSettingsAmount = amount;
+        tgeSettingsPartInvestor = partInvestor;
+        tgeSettingsPartProject = partProject;
+        tgeSettingsPartFounders = partFounders;
+        tgeSettingsBlocksPerStage = blocksPerStage;
+        tgeSettingsPartProjectDecreasePerStage = partProjectDecreasePerStage;
+        tgeSettingsPartFoundersDecreasePerStage = partFoundersDecreasePerStage;
+        tgeSettingsPartInvestorIncreasePerStage = partInvestorIncreasePerStage;
+        return true;
     }
     //---------------- GETTERS ----------------
     /// @dev Amount of blocks left to the end of this stage of TGE 
@@ -426,6 +329,22 @@ contract Token is ERC20 {
     returns(bool)
     {
         return isFrozen;
+    }
+    function tgeCurrentPartInvestor()
+    public
+    isTgeLive
+    returns(uint)
+    {
+        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);        
+        return tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+    }
+    function tgeNextPartInvestor()
+    public
+    isTgeLive
+    returns(uint)
+    {
+        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);        
+        return tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
     //---------------- INTERNAL ---------------
     function _finishTge()

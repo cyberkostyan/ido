@@ -1,4 +1,17 @@
 pragma solidity ^0.4.15;
+contract IToken {
+    function goLive();
+    function executeSettingsChange(
+        uint amount, 
+        uint partInvestor,
+        uint partProject, 
+        uint partFounders, 
+        uint blocksPerStage, 
+        uint partProjectDecreasePerStage,
+        uint partFoundersDecreasePerStage,
+        uint partInvestorIncreasePerStage
+    );
+}
 contract MultiSigWallet {
     uint constant public MAX_OWNER_COUNT = 50;
     event Confirmation(address indexed sender, uint indexed transactionId);
@@ -16,6 +29,24 @@ contract MultiSigWallet {
     address[] public owners;
     uint public required;
     uint public transactionCount;
+    
+    mapping(address => bool) frozenConfirms;
+    IToken token;
+    struct SettingsRequest 
+    {
+        uint amount;
+        uint partInvestor;
+        uint partProject;
+        uint partFounders;
+        uint blocksPerStage;
+        uint partProjectDecreasePerStage;
+        uint partFoundersDecreasePerStage;
+        uint partInvestorIncreasePerStage;
+        bool executed;
+        mapping(address => bool) confirmations;
+    }
+    uint settingsRequestsCount = 0;
+    mapping(uint => SettingsRequest) settingsRequests;
     struct Transaction {
         address destination;
         uint value;
@@ -85,6 +116,140 @@ contract MultiSigWallet {
         owners = _owners;
         required = _required;
     }
+    function setToken(address _token)
+    public
+    ownerExists(msg.sender)
+    {
+        token = IToken(_token);
+    }
+    //---------------- TGE SETTINGS -----------
+    /// @dev Sends request to change settings
+    /// @return Transaction ID
+    function tgeSettingsChangeRequest(
+        uint amount, 
+        uint partInvestor,
+        uint partProject, 
+        uint partFounders, 
+        uint blocksPerStage, 
+        uint partProjectDecreasePerStage,
+        uint partFoundersDecreasePerStage,
+        uint partInvestorIncreasePerStage
+    ) 
+    public
+    ownerExists(msg.sender)
+    returns (uint _txIndex) 
+    {
+        _txIndex = settingsRequestsCount;
+        settingsRequests[_txIndex] = SettingsRequest({
+            amount: amount,
+            partInvestor: partInvestor,
+            partProject: partProject,
+            partFounders: partFounders,
+            blocksPerStage: blocksPerStage,
+            partProjectDecreasePerStage: partProjectDecreasePerStage,
+            partFoundersDecreasePerStage: partFoundersDecreasePerStage,
+            partInvestorIncreasePerStage: partInvestorIncreasePerStage,
+            executed: false
+        });
+        settingsRequestsCount++;
+        return _txIndex;
+    }
+    /// @dev Allows an owner to confirm a change settings request.
+    /// @param _txIndex Transaction ID.
+    function confirmSettingsChange(uint _txIndex) 
+    public
+    ownerExists(msg.sender) 
+    returns(bool success)
+    {
+        settingsRequests[_txIndex].confirmations[msg.sender] = true;
+        if(isConfirmedSettingsRequest(_txIndex)){
+            SettingsRequest storage request = settingsRequests[_txIndex];
+            request.executed = true;
+            IToken(token).executeSettingsChange(
+                request.amount, 
+                request.partInvestor,
+                request.partProject,
+                request.partFounders,
+                request.blocksPerStage,
+                request.partProjectDecreasePerStage,
+                request.partFoundersDecreasePerStage,
+                request.partInvestorIncreasePerStage
+            );
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function isConfirmedSettingsRequest(uint transactionId)
+    public
+    constant
+    returns (bool)
+    {
+        uint count = 0;
+        for (uint i = 0; i < owners.length; i++) {
+            if (settingsRequests[transactionId].confirmations[owners[i]])
+                count += 1;
+            if (count == required)
+                return true;
+        }
+        return false;
+    }
+    /// @dev Shows what settings were requested in a settings change request
+    function viewSettingsChange(uint _txIndex) 
+    public
+    ownerExists(msg.sender)  
+    returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partProjectDecreasePerStage, uint partFoundersDecreasePerStage, uint partInvestorIncreasePerStage) {
+        SettingsRequest storage request = settingsRequests[_txIndex];
+        return (
+            request.amount,
+            request.partInvestor, 
+            request.partProject,
+            request.partFounders,
+            request.blocksPerStage,
+            request.partProjectDecreasePerStage,
+            request.partFoundersDecreasePerStage,
+            request.partInvestorIncreasePerStage
+        );
+    }
+    /// @dev Allows an owner to confirm goLive process
+    /// @return Confirmation status
+    function confirmGoLive()
+    public
+    ownerExists(msg.sender)
+    returns (bool)
+    {
+        frozenConfirms[msg.sender] = true;
+        if(isConfirmedFrozenRequest()){
+            IToken(token).goLive();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /// @dev Returns the confirmation status of goLive process.
+    /// @return Confirmation status.
+    function isConfirmedFrozenRequest()
+    public
+    constant
+    returns (bool)
+    {
+        uint count = 0;
+        for (uint i = 0; i < owners.length; i++) {
+            if (frozenConfirms[owners[i]])
+                count += 1;
+            if (count == required)
+                return true;
+        }
+        return false;
+    }
+    function cancelGoLive()
+    public
+    ownerExists(msg.sender)
+    returns (bool)
+    {
+        frozenConfirms[msg.sender] = false;
+        return true;
+    }
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
     /// @param owner Address of new owner.
     function addOwner(address owner)
@@ -152,6 +317,7 @@ contract MultiSigWallet {
     /// @return Returns transaction ID.
     function submitTransaction(address destination, uint value, bytes data)
         public
+        ownerExists(msg.sender)
         returns (uint transactionId)
     {
         transactionId = addTransaction(destination, value, data);
