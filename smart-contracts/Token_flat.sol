@@ -131,24 +131,6 @@ contract Token is ERC20 {
     address public projectWallet;
     address public foundersWallet;
     address constant public burnAddress = 0x0;
-    mapping(address => bool) isOwner;
-    address[] owners;
-    mapping(address => bool) frozenConfirms;
-    struct SettingsRequest 
-    {
-        uint amount;
-        uint partInvestor;
-        uint partProject;
-        uint partFounders;
-        uint blocksPerStage;
-        uint partProjectDecreasePerStage;
-        uint partFoundersDecreasePerStage;
-        uint partInvestorIncreasePerStage;
-        bool executed;
-        mapping(address => bool) confirmations;
-    }
-    uint settingsRequestsCount = 0;
-    mapping(uint => SettingsRequest) settingsRequests;
     modifier isTgeLive(){
         require(tgeLive);
         _;
@@ -161,22 +143,13 @@ contract Token is ERC20 {
         require(tgeSettingsAmountCollect < tgeSettingsAmount);
         _;
     }
-    modifier onlyOwners(){
-        require(isOwner[msg.sender]);
-        _;
-    }
     event Burn(address indexed _owner,  uint _value);
     /// @dev Constructor
     /// @param _projectWallet Wallet of project
     /// @param _foundersWallet Wallet of founders
-    function Token(address _projectWallet, address _foundersWallet, address[] _owners){
+    function Token(address _projectWallet, address _foundersWallet){
         projectWallet = _projectWallet;
         foundersWallet = _foundersWallet;
-        for (uint i=0; i<_owners.length; i++) {
-            require(!isOwner[_owners[i]] && _owners[i] != 0);
-            isOwner[_owners[i]] = true;
-        }
-        owners = _owners;
     }
     /// @dev Fallback function allows to buy tokens
     function ()
@@ -214,7 +187,7 @@ contract Token is ERC20 {
             currentPartFounders = 0;
         }
         
-        uint currentPartInvestor = tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        uint currentPartInvestor = tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
         uint allStakes = currentPartInvestor.add(currentPartProject).add(currentPartFounders);
         uint amountProject = senderAmount.mul(currentPartProject).div(allStakes);
         uint amountFounders = senderAmount.mul(currentPartFounders).div(allStakes);
@@ -336,7 +309,7 @@ contract Token is ERC20 {
     returns(uint)
     {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);        
-        return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        return tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
     function tgeNextPartInvestor()
     public
