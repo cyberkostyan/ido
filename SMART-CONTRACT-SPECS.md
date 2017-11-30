@@ -154,7 +154,7 @@ Founders' multisig contract controls how each TGE round is setup by setting 4 pa
 When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
 
 ```javascript
-function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, partProjectDecreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
+function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, tgeSettingsPartInvestorIncreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
 // sends a request to change settings.
 // @returns index of the settings change request. other founders will confirm
 // the changes using this index.
@@ -167,7 +167,7 @@ function confirmSettingsChange(uint _txIndex) only(owner) tgeNotLive public retu
 // @returns true if confirmed successfully, false if more confirmations are needed.
 }
 
-function viewSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (uint amount, partSender, partProject, partFounders, blocksPerStage, ratioDecreasePerStage) {
+function viewSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (uint amount, partSender, partProject, partFounders, blocksPerStage, tgeSettingsPartInvestorIncreasePerStage) {
 // shows what settings were requested in a settings change request
 // 
 }
