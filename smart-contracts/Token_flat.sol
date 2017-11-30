@@ -120,8 +120,6 @@ contract Token is ERC20 {
     uint public tgeSettingsPartProject;
     uint public tgeSettingsPartFounders;
     uint public tgeSettingsBlocksPerStage;
-    uint public tgeSettingsPartProjectDecreasePerStage;
-    uint public tgeSettingsPartFoundersDecreasePerStage;
     uint public tgeSettingsPartInvestorIncreasePerStage;
     uint public tgeSettingsAmountCollect;
     uint public tgeSettingsAmountLeft;
@@ -162,7 +160,7 @@ contract Token is ERC20 {
     {
         require(msg.value > 0);
         if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
-            _finishTge();
+            _finishTge()
         }
         uint refundAmount = 0;
         uint senderAmount = msg.value;
@@ -171,26 +169,11 @@ contract Token is ERC20 {
             senderAmount = msg.value.sub(refundAmount);
         }
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
-        uint tmpPartProject = stage.mul(tgeSettingsPartProjectDecreasePerStage);
-        uint tmpPartFounders = stage.mul(tgeSettingsPartFoundersDecreasePerStage);
-        uint currentPartProject;
-        if(tgeSettingsPartProject > tmpPartProject){
-            currentPartProject = tgeSettingsPartProject.sub(tmpPartProject);
-        } else {
-            currentPartProject = 0;
-        }
         
-        uint currentPartFounders;
-        if(tgeSettingsPartFounders > tmpPartFounders){
-            currentPartFounders = tgeSettingsPartFounders.sub(tmpPartFounders);
-        } else {
-            currentPartFounders = 0;
-        }
-        
-        uint currentPartInvestor = tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
-        uint allStakes = currentPartInvestor.add(currentPartProject).add(currentPartFounders);
-        uint amountProject = senderAmount.mul(currentPartProject).div(allStakes);
-        uint amountFounders = senderAmount.mul(currentPartFounders).div(allStakes);
+        uint currentPartInvestor = tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        uint allStakes = currentPartInvestor.add(tgeSettingsPartProject).add(tgeSettingsPartFounders);
+        uint amountProject = senderAmount.mul(tgeSettingsPartProject).div(allStakes);
+        uint amountFounders = senderAmount.mul(tgeSettingsPartFounders).div(allStakes);
         uint amountSender = senderAmount.sub(amountProject).sub(amountFounders);
         _mint(amountProject, amountFounders, amountSender);
         msg.sender.transfer(refundAmount);
@@ -267,8 +250,6 @@ contract Token is ERC20 {
         uint partProject, 
         uint partFounders, 
         uint blocksPerStage, 
-        uint partProjectDecreasePerStage,
-        uint partFoundersDecreasePerStage,
         uint partInvestorIncreasePerStage
     ) 
     public
@@ -282,8 +263,6 @@ contract Token is ERC20 {
         tgeSettingsPartProject = partProject;
         tgeSettingsPartFounders = partFounders;
         tgeSettingsBlocksPerStage = blocksPerStage;
-        tgeSettingsPartProjectDecreasePerStage = partProjectDecreasePerStage;
-        tgeSettingsPartFoundersDecreasePerStage = partFoundersDecreasePerStage;
         tgeSettingsPartInvestorIncreasePerStage = partInvestorIncreasePerStage;
         return true;
     }
@@ -308,8 +287,8 @@ contract Token is ERC20 {
     isTgeLive
     returns(uint)
     {
-        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);        
-        return tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
+        return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
     function tgeNextPartInvestor()
     public
@@ -317,7 +296,7 @@ contract Token is ERC20 {
     returns(uint)
     {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);        
-        return tgeSettingsPartInvestor.sub(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
+        return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
     //---------------- INTERNAL ---------------
     function _finishTge()
