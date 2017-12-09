@@ -75,12 +75,24 @@ function setLive() {
      <start TGE countdown>
   }
 }
-
 ```
 
 > **Note:** On minting, do not forget to include the ERC20-compliant call to Transfer event so that many wallets and block explorers can see the tokens on balances of holders.
 
-TGE round ends when target amount of tokens for the project has been minted.
+TGE round ends when target amount of tokens for the project has been minted. However one can set a maximum number of stages that tge will be live.
+
+Also there should be a method stopping a tge round.
+
+```javascript
+function setFinished() {
+  if (<if more than 1 token in project wallet>) {
+     /// no point finishing TGE if less that 1 token in project wallet.
+     /// because next fallback will set it live again.
+     tgeLive = false;
+     <stop TGE countdown>
+  }
+}
+```
 
 ## Multisig
 
@@ -154,7 +166,7 @@ Founders' multisig contract controls how each TGE round is setup by setting 4 pa
 When TGE round is Live TGE settings *may not* be modified. The settings may only be modified before TGE round.
 
 ```javascript
-function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, partInvestorIncreasePerStage) only(owner) tgeNotLive public returns (uint _txIndex) {
+function tgeSettingsChangeRequest(uint amount, partSender, partProject, partFounders, blocksPerStage, partInvestorIncreasePerStage, maxStages) only(owner) tgeNotLive public returns (uint _txIndex) {
 // sends a request to change settings.
 // @returns index of the settings change request. other founders will confirm
 // the changes using this index.
@@ -167,7 +179,7 @@ function confirmSettingsChange(uint _txIndex) only(owner) tgeNotLive public retu
 // @returns true if confirmed successfully, false if more confirmations are needed.
 }
 
-function viewSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (uint amount, partSender, partProject, partFounders, blocksPerStage, partInvestorIncreasePerStage) {
+function viewSettingsChange(uint _txIndex) only(owner) tgeNotLive public returns (uint amount, partSender, partProject, partFounders, blocksPerStage, partInvestorIncreasePerStage, maxStages) {
 // shows what settings were requested in a settings change request
 // 
 }
@@ -241,6 +253,7 @@ uint public
      tgeSettingsPartFounders,
      tgeSettingsBlocksPerStage,
      tgeSettingsPartInvestorIncreasePerStage,
+     tgeSettingsMaxStages, // maximum stages a tge should be live. Even if not all funds collected the tge will stop after this number of stages
      // extra properties to see current status of TGE round:
      tgeAmountCollected, // the amount of ETH collected so far in this round of TGE.
      tgeAmountLeft, // the amount of ETH left to collect in this round of TGE.     
