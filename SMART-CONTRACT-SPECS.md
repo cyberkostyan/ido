@@ -94,6 +94,9 @@ function setFinished() {
 }
 ```
 
+`setFinished()` can only be called by founders' MultiSig.
+
+
 ## Multisig
 
 The Token contract's project tokens must be controlled by founder's multisig wallet. Also this mutisig contract must control the settings of each TGE round.
