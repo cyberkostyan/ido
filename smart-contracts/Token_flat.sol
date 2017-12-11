@@ -52,6 +52,8 @@ contract Base {
 }
 contract ERC20 is Base {
     using SafeMath for uint;
+    uint public totalSupply;
+    bool public isFrozen = false;
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
     function transfer(address _to, uint _value) isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
@@ -93,10 +95,11 @@ contract ERC20 is Base {
     function allowance(address _owner, address _spender) constant returns (uint remaining) {
         return allowed[_owner][_spender];
     }
+    function totalSupply() constant returns (uint totalSupply) {
+        return totalSupply;
+    }
     mapping (address => uint) balances;
     mapping (address => mapping (address => uint)) allowed;
-    uint public totalSupply;
-    bool public isFrozen = false;
     modifier isNotFrozenOnly() {
         require(!isFrozen);
         _;
@@ -123,18 +126,26 @@ contract Token is ERC20 {
     uint public tgeSettingsPartInvestorIncreasePerStage;
     uint public tgeSettingsAmountCollect;
     uint public tgeSettingsAmountLeft;
+    uint public tgeSettingsMaxStages;
     uint tgeStackSender;
     uint tgeStackProject;
     uint tgeStackFounders;
     address public projectWallet;
     address public foundersWallet;
     address constant public burnAddress = 0x0;
+    mapping (address => uint) public invBalances;
+    uint public totalInvSupply;
     modifier isTgeLive(){
         require(tgeLive);
         _;
     }
     modifier isNotTgeLive(){
         require(!tgeLive);
+        _;
+    }
+    modifier maxStagesIsNotAchieved() {
+        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
+        require(stage <= tgeSettingsMaxStages);
         _;
     }
     modifier targetIsNotAchieved(){
@@ -156,11 +167,12 @@ contract Token is ERC20 {
     isTgeLive
     isNotFrozenOnly
     targetIsNotAchieved
+    maxStagesIsNotAchieved
     noAnyReentrancy
     {
         require(msg.value > 0);
         if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
-            _finishTge()
+            _finishTge();
         }
         uint refundAmount = 0;
         uint senderAmount = msg.value;
@@ -168,7 +180,7 @@ contract Token is ERC20 {
             refundAmount = tgeSettingsAmountCollect.add(msg.value).sub(tgeSettingsAmount);
             senderAmount = msg.value.sub(refundAmount);
         }
-        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
+        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);        
         
         uint currentPartInvestor = tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
         uint allStakes = currentPartInvestor.add(tgeSettingsPartProject).add(tgeSettingsPartFounders);
@@ -177,6 +189,16 @@ contract Token is ERC20 {
         uint amountSender = senderAmount.sub(amountProject).sub(amountFounders);
         _mint(amountProject, amountFounders, amountSender);
         msg.sender.transfer(refundAmount);
+    }
+    function setFinished()
+    public
+    only(projectWallet)
+    isNotFrozenOnly
+    isTgeLive
+    {
+        if(balances[projectWallet] > 1*BIT){
+            _finishTge();
+        }
     }
     /// @dev Start new tge stage
     function setLive()
@@ -229,6 +251,7 @@ contract Token is ERC20 {
     returns (bool)
     {
         isFrozen = true;
+        totalInvSupply = address(this).balance;
         return true;
     }
     /// @dev Allows to users withdraw eth in frozen stage 
@@ -237,10 +260,10 @@ contract Token is ERC20 {
     isFrozenOnly
     noAnyReentrancy
     {
-        require(balances[msg.sender] > 0);
+        require(invBalances[msg.sender] > 0);
         
-        uint amountWithdraw = address(this).balance.mul(balances[msg.sender]).div(totalSupply);        
-        balances[msg.sender] = 0;
+        uint amountWithdraw = totalInvSupply.mul(invBalances[msg.sender]).div(totalSupply);        
+        invBalances[msg.sender] = 0;
         msg.sender.transfer(amountWithdraw);
     }
     /// @dev Allows an owner to confirm a change settings request.
@@ -250,7 +273,8 @@ contract Token is ERC20 {
         uint partProject, 
         uint partFounders, 
         uint blocksPerStage, 
-        uint partInvestorIncreasePerStage
+        uint partInvestorIncreasePerStage,
+        uint maxStages
     ) 
     public
     only(projectWallet)
@@ -264,6 +288,7 @@ contract Token is ERC20 {
         tgeSettingsPartFounders = partFounders;
         tgeSettingsBlocksPerStage = blocksPerStage;
         tgeSettingsPartInvestorIncreasePerStage = partInvestorIncreasePerStage;
+        tgeSettingsMaxStages = maxStages;
         return true;
     }
     //---------------- GETTERS ----------------
@@ -310,6 +335,7 @@ contract Token is ERC20 {
         balances[projectWallet] = balances[projectWallet].add(_amountProject);
         balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
         balances[msg.sender] = balances[msg.sender].add(_amountSender);
+        invBalances[msg.sender] = invBalances[msg.sender].add(_amountSender);
         tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(msg.value);
         tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
         totalSupply = totalSupply.add(msg.value);

@@ -7,9 +7,8 @@ contract IToken {
         uint partProject, 
         uint partFounders, 
         uint blocksPerStage, 
-        uint partProjectDecreasePerStage,
-        uint partFoundersDecreasePerStage,
-        uint partInvestorIncreasePerStage
+        uint partInvestorIncreasePerStage,
+        uint maxStages
     );
 }
 contract MultiSigWallet {
@@ -39,9 +38,8 @@ contract MultiSigWallet {
         uint partProject;
         uint partFounders;
         uint blocksPerStage;
-        uint partProjectDecreasePerStage;
-        uint partFoundersDecreasePerStage;
         uint partInvestorIncreasePerStage;
+        uint maxStages;
         bool executed;
         mapping(address => bool) confirmations;
     }
@@ -131,9 +129,8 @@ contract MultiSigWallet {
         uint partProject, 
         uint partFounders, 
         uint blocksPerStage, 
-        uint partProjectDecreasePerStage,
-        uint partFoundersDecreasePerStage,
-        uint partInvestorIncreasePerStage
+        uint partInvestorIncreasePerStage,
+        uint maxStages
     ) 
     public
     ownerExists(msg.sender)
@@ -146,9 +143,8 @@ contract MultiSigWallet {
             partProject: partProject,
             partFounders: partFounders,
             blocksPerStage: blocksPerStage,
-            partProjectDecreasePerStage: partProjectDecreasePerStage,
-            partFoundersDecreasePerStage: partFoundersDecreasePerStage,
             partInvestorIncreasePerStage: partInvestorIncreasePerStage,
+            maxStages: maxStages,
             executed: false
         });
         settingsRequestsCount++;
@@ -171,9 +167,8 @@ contract MultiSigWallet {
                 request.partProject,
                 request.partFounders,
                 request.blocksPerStage,
-                request.partProjectDecreasePerStage,
-                request.partFoundersDecreasePerStage,
-                request.partInvestorIncreasePerStage
+                request.partInvestorIncreasePerStage,
+                request.maxStages
             );
             return true;
         } else {
@@ -198,7 +193,7 @@ contract MultiSigWallet {
     function viewSettingsChange(uint _txIndex) 
     public
     ownerExists(msg.sender)  
-    returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partProjectDecreasePerStage, uint partFoundersDecreasePerStage, uint partInvestorIncreasePerStage) {
+    returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partInvestorIncreasePerStage, uint maxStages) {
         SettingsRequest storage request = settingsRequests[_txIndex];
         return (
             request.amount,
@@ -206,9 +201,8 @@ contract MultiSigWallet {
             request.partProject,
             request.partFounders,
             request.blocksPerStage,
-            request.partProjectDecreasePerStage,
-            request.partFoundersDecreasePerStage,
-            request.partInvestorIncreasePerStage
+            request.partInvestorIncreasePerStage,
+            request.maxStages
         );
     }
     /// @dev Allows an owner to confirm goLive process
@@ -321,6 +315,22 @@ contract MultiSigWallet {
         returns (uint transactionId)
     {
         transactionId = addTransaction(destination, value, data);
+        confirmTransaction(transactionId);
+    }
+    function setFinishedTx(address destination)
+        public
+        ownerExists(msg.sender)
+        returns(uint transactionId)
+    {
+        transactionId = addTransaction(destination, 0, "0x64f65cc0");
+        confirmTransaction(transactionId);
+    }
+    function setLiveTx(address destination)
+        public
+        ownerExists(msg.sender)
+        returns(uint transactionId)
+    {
+        transactionId = addTransaction(destination, 0, "0xb98de7c7");
         confirmTransaction(transactionId);
     }
     /// @dev Allows an owner to confirm a transaction.
