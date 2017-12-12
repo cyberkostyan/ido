@@ -69,7 +69,7 @@ If TGE is LIVE, all ETH sent to tokens remains in contract, and equal amount of 
 TGE automatically goes Live when there is less than 1 Token left in project multisig wallet. At this time ANYONE can send ETH to the contract and receive their portion of the tokens. Sending any amount of ETH to the token address triggers the tgeLive flag to be set to true and countdown begins. You can also trigger the TGE by calling a special method.
 
 ```javascript
-function setLive() {
+function tgeSetLive() {
   if (<no more than 1 token left in project wallet>) {
      tgeLive = true;
      <start TGE countdown>
