@@ -201,7 +201,7 @@ contract Token is ERC20 {
         }
     }
     /// @dev Start new tge stage
-    function setLive()
+    function tgeSetLive()
     public
     only(projectWallet)
     isNotTgeLive
