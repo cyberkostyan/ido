@@ -30,7 +30,7 @@ This approach to funding has a few advantages to traditional ICOs.
  * more power over project to the contributors - the people who create it. Contributors may decide how much of their compensation to keep in tokens, rather than given a fixed amount.
  * less risk of loosing the raised funds, since only a small amount of crypto is locked, not all the amount raised.
  * there is less wastage of funds on marketing, pr and other bs that the current ICO craze has created.
- * if there is a loss of interest in the project the investors can get back part of their investments any time before the project is complete.
+ * investors have a chance to return at least some of their investments.
 
 ## Annihilat.io
 
