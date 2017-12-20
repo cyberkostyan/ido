@@ -56,7 +56,7 @@ contract ERC20 is Base {
     bool public isFrozen = false;
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
-    function transfer(address _to, uint _value) isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
+    function transfer(address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
         require(_to != address(0));
         require(_value <= balances[msg.sender]);
         // SafeMath.sub will throw if there is not enough balance.
@@ -65,7 +65,7 @@ contract ERC20 is Base {
         Transfer(msg.sender, _to, _value);
         return true;
     }
-    function transferFrom(address _from, address _to, uint _value) isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
+    function transferFrom(address _from, address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
         require(_to != address(0));
         require(_value <= balances[_from]);
         require(_value <= allowed[_from][msg.sender]);
@@ -75,10 +75,10 @@ contract ERC20 is Base {
         Transfer(_from, _to, _value);
         return true;
     }
-    function balanceOf(address _owner) constant returns (uint balance) {
+    function balanceOf(address _owner) public constant returns (uint balance) {
         return balances[_owner];
     }
-    function approve_fixed(address _spender, uint _currentValue, uint _value) isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
+    function approve_fixed(address _spender, uint _currentValue, uint _value) public isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
             Approval(msg.sender, _spender, _value);
@@ -87,15 +87,15 @@ contract ERC20 is Base {
             return false;
         }
     }
-    function approve(address _spender, uint _value) isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
+    function approve(address _spender, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
     }
-    function allowance(address _owner, address _spender) constant returns (uint remaining) {
+    function allowance(address _owner, address _spender) public constant returns (uint remaining) {
         return allowed[_owner][_spender];
     }
-    function totalSupply() constant returns (uint totalSupply) {
+    function totalSupply() public constant returns (uint totalSupply) {
         return totalSupply;
     }
     mapping (address => uint) balances;
@@ -216,12 +216,13 @@ contract Token is ERC20 {
     /// @param _amount Amount of tokens
     function burn(uint _amount)
     public 
-    isNotTgeLive
     noAnyReentrancy    
     returns(bool _success)
     {
         require(balances[msg.sender] >= _amount);
-        transfer(burnAddress, _amount);
+        balances[msg.sender] = balances[msg.sender].sub(_amount);
+        balances[burnAddress] = balances[burnAddress].add(_amount);
+        
         msg.sender.transfer(_amount);
         Burn(msg.sender, _amount);
         return true;

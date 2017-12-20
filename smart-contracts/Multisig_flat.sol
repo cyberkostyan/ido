@@ -51,8 +51,13 @@ contract MultiSigWallet {
         bytes data;
         bool executed;
     }
+    address owner;
     modifier onlyWallet() {
         require(msg.sender == address(this));
+        _;
+    }
+    modifier onlyOwner() {
+        require(msg.sender == owner);
         _;
     }
     modifier ownerDoesNotExist(address owner) {
@@ -92,6 +97,7 @@ contract MultiSigWallet {
     }
     /// @dev Fallback function allows to deposit ether.
     function()
+        public
         payable
     {
         if (msg.value > 0)
@@ -113,11 +119,14 @@ contract MultiSigWallet {
         }
         owners = _owners;
         required = _required;
+        owner = msg.sender;
     }
     function setToken(address _token)
     public
-    ownerExists(msg.sender)
+    onlyOwner
     {
+        require(token == address(0));
+        
         token = IToken(_token);
     }
     //---------------- TGE SETTINGS -----------
@@ -312,6 +321,7 @@ contract MultiSigWallet {
     function submitTransaction(address destination, uint value, bytes data)
         public
         ownerExists(msg.sender)
+        notNull(destination)
         returns (uint transactionId)
     {
         transactionId = addTransaction(destination, value, data);
@@ -320,6 +330,7 @@ contract MultiSigWallet {
     function setFinishedTx(address destination)
         public
         ownerExists(msg.sender)
+        notNull(destination)
         returns(uint transactionId)
     {
         transactionId = addTransaction(destination, 0, "0x64f65cc0");
@@ -328,6 +339,7 @@ contract MultiSigWallet {
     function setLiveTx(address destination)
         public
         ownerExists(msg.sender)
+        notNull(destination)
         returns(uint transactionId)
     {
         transactionId = addTransaction(destination, 0, "0xb98de7c7");
@@ -388,6 +400,7 @@ contract MultiSigWallet {
             if (count == required)
                 return true;
         }
+        return false;
     }
     /*
      * Internal functions
@@ -399,7 +412,6 @@ contract MultiSigWallet {
     /// @return Returns transaction ID.
     function addTransaction(address destination, uint value, bytes data)
         internal
-        notNull(destination)
         returns (uint transactionId)
     {
         transactionId = transactionCount;
@@ -484,7 +496,7 @@ contract MultiSigWallet {
         uint[] memory transactionIdsTemp = new uint[](transactionCount);
         uint count = 0;
         uint i;
-        for (i=0; i<transactionCount; i++)
+        for (i=from; i<transactionCount; i++)
             if (   pending && !transactions[i].executed
                 || executed && transactions[i].executed)
             {
