@@ -222,8 +222,10 @@ contract Token is ERC20 {
         require(balances[msg.sender] >= _amount);
         balances[msg.sender] = balances[msg.sender].sub(_amount);
         balances[burnAddress] = balances[burnAddress].add(_amount);
+        totalSupply = totalSupply.sub(_amount);
         
         msg.sender.transfer(_amount);
+        Transfer(msg.sender, 0x0, _amount);
         Burn(msg.sender, _amount);
         return true;
     }
