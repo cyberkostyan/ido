@@ -1,6 +1,5 @@
 pragma solidity ^0.4.15;
 contract IToken {
-    function goLive();
     function executeSettingsChange(
         uint amount, 
         uint partInvestor,
@@ -29,7 +28,6 @@ contract MultiSigWallet {
     uint public required;
     uint public transactionCount;
     
-    mapping(address => bool) frozenConfirms;
     IToken token;
     struct SettingsRequest 
     {
@@ -166,6 +164,8 @@ contract MultiSigWallet {
     ownerExists(msg.sender) 
     returns(bool success)
     {
+        require(settingsRequests[_txIndex].executed == false);
+
         settingsRequests[_txIndex].confirmations[msg.sender] = true;
         if(isConfirmedSettingsRequest(_txIndex)){
             SettingsRequest storage request = settingsRequests[_txIndex];
@@ -213,45 +213,6 @@ contract MultiSigWallet {
             request.partInvestorIncreasePerStage,
             request.maxStages
         );
-    }
-    /// @dev Allows an owner to confirm goLive process
-    /// @return Confirmation status
-    function confirmGoLive()
-    public
-    ownerExists(msg.sender)
-    returns (bool)
-    {
-        frozenConfirms[msg.sender] = true;
-        if(isConfirmedFrozenRequest()){
-            IToken(token).goLive();
-            return true;
-        } else {
-            return false;
-        }
-    }
-    /// @dev Returns the confirmation status of goLive process.
-    /// @return Confirmation status.
-    function isConfirmedFrozenRequest()
-    public
-    constant
-    returns (bool)
-    {
-        uint count = 0;
-        for (uint i = 0; i < owners.length; i++) {
-            if (frozenConfirms[owners[i]])
-                count += 1;
-            if (count == required)
-                return true;
-        }
-        return false;
-    }
-    function cancelGoLive()
-    public
-    ownerExists(msg.sender)
-    returns (bool)
-    {
-        frozenConfirms[msg.sender] = false;
-        return true;
     }
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
     /// @param owner Address of new owner.
@@ -343,6 +304,14 @@ contract MultiSigWallet {
         returns(uint transactionId)
     {
         transactionId = addTransaction(destination, 0, "0xb98de7c7");
+        confirmTransaction(transactionId);
+    }
+    function goLiveTx(address destination)
+        ownerExists(msg.sender)
+        notNull(destination)
+        returns(uint transactionId)
+    {
+        transactionId = addTransaction(destination, 0, "0x2c28f579");
         confirmTransaction(transactionId);
     }
     /// @dev Allows an owner to confirm a transaction.

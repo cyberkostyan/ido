@@ -56,15 +56,7 @@ contract ERC20 is Base {
     bool public isFrozen = false;
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
-    function transfer(address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
-        require(_to != address(0));
-        require(_value <= balances[msg.sender]);
-        // SafeMath.sub will throw if there is not enough balance.
-        balances[msg.sender] = balances[msg.sender].sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        Transfer(msg.sender, _to, _value);
-        return true;
-    }
+    
     function transferFrom(address _from, address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
         require(_to != address(0));
         require(_value <= balances[_from]);
@@ -153,6 +145,20 @@ contract Token is ERC20 {
         _;
     }
     event Burn(address indexed _owner,  uint _value);
+    function transfer(address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
+        require(_to != address(0));
+        require(_value <= balances[msg.sender]);
+        // SafeMath.sub will throw if there is not enough balance.
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        
+        if(balances[projectWallet] < 1 * BIT){
+            _internalTgeSetLive();
+        }
+        
+        Transfer(msg.sender, _to, _value);
+        return true;
+    }
     /// @dev Constructor
     /// @param _projectWallet Wallet of project
     /// @param _foundersWallet Wallet of founders
@@ -207,10 +213,7 @@ contract Token is ERC20 {
     isNotTgeLive
     isNotFrozenOnly
     {
-        tgeLive = true;
-        tgeStartBlock = block.number;
-        tgeSettingsAmountLeft = tgeSettingsAmount;
-        tgeSettingsAmountCollect = 0;
+        _internalTgeSetLive();
     }
     /// @dev Burn tokens to burnAddress from msg.sender wallet
     /// @param _amount Amount of tokens
@@ -343,5 +346,13 @@ contract Token is ERC20 {
         tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
         totalSupply = totalSupply.add(msg.value);
         Transfer(0x0, msg.sender, _amountSender);
+    }
+    function _internalTgeSetLive()
+    internal
+    {
+        tgeLive = true;
+        tgeStartBlock = block.number;
+        tgeSettingsAmountLeft = tgeSettingsAmount;
+        tgeSettingsAmountCollect = 0;
     }
 }
