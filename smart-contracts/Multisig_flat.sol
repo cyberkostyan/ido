@@ -294,7 +294,7 @@ contract MultiSigWallet {
         notNull(destination)
         returns(uint transactionId)
     {
-        transactionId = addTransaction(destination, 0, "0x64f65cc0");
+        transactionId = addTransaction(destination, 0, hex"64f65cc0");
         confirmTransaction(transactionId);
     }
     function setLiveTx(address destination)
@@ -303,7 +303,7 @@ contract MultiSigWallet {
         notNull(destination)
         returns(uint transactionId)
     {
-        transactionId = addTransaction(destination, 0, "0xb98de7c7");
+        transactionId = addTransaction(destination, 0, hex"b98de7c7");
         confirmTransaction(transactionId);
     }
     function goLiveTx(address destination)
@@ -311,7 +311,7 @@ contract MultiSigWallet {
         notNull(destination)
         returns(uint transactionId)
     {
-        transactionId = addTransaction(destination, 0, "0x2c28f579");
+        transactionId = addTransaction(destination, 0, hex"2c28f579");
         confirmTransaction(transactionId);
     }
     /// @dev Allows an owner to confirm a transaction.

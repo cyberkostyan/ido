@@ -108,7 +108,6 @@ contract Token is ERC20 {
     uint public constant BIT = 10**18;
     uint public constant BASE = 10000 * BIT;
     bool tgeLive = false;
-    bool frozen = false;
     uint tgeStartBlock;
     uint public tgeSettingsAmount;
     uint public tgeSettingsPartInvestor;
@@ -207,7 +206,7 @@ contract Token is ERC20 {
         }
     }
     /// @dev Start new tge stage
-    function tgeSetLive()
+    function setLive()
     public
     only(projectWallet)
     isNotTgeLive
