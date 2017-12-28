@@ -369,6 +369,8 @@ contract Token is ERC20 {
         tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
         totalSupply = totalSupply.add(msg.value);
         Transfer(0x0, msg.sender, _amountSender);
+        Transfer(0x0, projectWallet, _amountProject);
+        Transfer(0x0, foundersWallet, _amountFounders);
     }
 
     function _internalTgeSetLive()
