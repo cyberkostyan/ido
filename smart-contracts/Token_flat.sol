@@ -21,6 +21,8 @@ library SafeMath {
         return c;
     }
 }
+
+
 contract Base {
     modifier only(address allowed) {
         require(msg.sender == allowed);
@@ -50,6 +52,8 @@ contract Base {
     }
     modifier reentrant { _; }
 }
+
+
 contract ERC20 is Base {
     using SafeMath for uint;
     uint public totalSupply;
@@ -67,9 +71,11 @@ contract ERC20 is Base {
         Transfer(_from, _to, _value);
         return true;
     }
+
     function balanceOf(address _owner) public constant returns (uint balance) {
         return balances[_owner];
     }
+
     function approve_fixed(address _spender, uint _currentValue, uint _value) public isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
@@ -79,28 +85,32 @@ contract ERC20 is Base {
             return false;
         }
     }
+
     function approve(address _spender, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
     }
+
     function allowance(address _owner, address _spender) public constant returns (uint remaining) {
         return allowed[_owner][_spender];
     }
-    function totalSupply() public constant returns (uint totalSupply) {
-        return totalSupply;
-    }
+
     mapping (address => uint) balances;
     mapping (address => mapping (address => uint)) allowed;
     modifier isNotFrozenOnly() {
         require(!isFrozen);
         _;
     }
+
     modifier isFrozenOnly(){
         require(isFrozen);
         _;
     }
+
 }
+
+
 contract Token is ERC20 {
     string public name = "Annihilat.io Token";
     string public symbol = "ANNI";
@@ -126,38 +136,40 @@ contract Token is ERC20 {
     address constant public burnAddress = 0x0;
     mapping (address => uint) public invBalances;
     uint public totalInvSupply;
+
     modifier isTgeLive(){
         require(tgeLive);
         _;
     }
+
     modifier isNotTgeLive(){
         require(!tgeLive);
         _;
     }
+
     modifier maxStagesIsNotAchieved() {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
         require(stage <= tgeSettingsMaxStages);
         _;
     }
+
     modifier targetIsNotAchieved(){
         require(tgeSettingsAmountCollect < tgeSettingsAmount);
         _;
     }
+
     event Burn(address indexed _owner,  uint _value);
     function transfer(address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
         require(_to != address(0));
-        require(_value <= balances[msg.sender]);
-        // SafeMath.sub will throw if there is not enough balance.
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        
         if(balances[projectWallet] < 1 * BIT){
             _internalTgeSetLive();
         }
-        
         Transfer(msg.sender, _to, _value);
         return true;
     }
+
     /// @dev Constructor
     /// @param _projectWallet Wallet of project
     /// @param _foundersWallet Wallet of founders
@@ -165,6 +177,7 @@ contract Token is ERC20 {
         projectWallet = _projectWallet;
         foundersWallet = _foundersWallet;
     }
+
     /// @dev Fallback function allows to buy tokens
     function ()
     public
@@ -195,6 +208,7 @@ contract Token is ERC20 {
         _mint(amountProject, amountFounders, amountSender);
         msg.sender.transfer(refundAmount);
     }
+
     function setFinished()
     public
     only(projectWallet)
@@ -205,6 +219,7 @@ contract Token is ERC20 {
             _finishTge();
         }
     }
+
     /// @dev Start new tge stage
     function setLive()
     public
@@ -214,6 +229,7 @@ contract Token is ERC20 {
     {
         _internalTgeSetLive();
     }
+
     /// @dev Burn tokens to burnAddress from msg.sender wallet
     /// @param _amount Amount of tokens
     function burn(uint _amount)
@@ -221,16 +237,15 @@ contract Token is ERC20 {
     noAnyReentrancy    
     returns(bool _success)
     {
-        require(balances[msg.sender] >= _amount);
         balances[msg.sender] = balances[msg.sender].sub(_amount);
         balances[burnAddress] = balances[burnAddress].add(_amount);
         totalSupply = totalSupply.sub(_amount);
-        
         msg.sender.transfer(_amount);
         Transfer(msg.sender, 0x0, _amount);
         Burn(msg.sender, _amount);
         return true;
     }
+
     /// @dev _foundersWallet Wallet of founders
     /// @param dests array of addresses 
     /// @param values array amount of tokens to transfer    
@@ -246,6 +261,7 @@ contract Token is ERC20 {
         }
         return i;
     }
+
     //---------------- FROZEN -----------------
     /// @dev Allows an owner to confirm goLive process
     /// @return Confirmation status
@@ -259,6 +275,7 @@ contract Token is ERC20 {
         totalInvSupply = address(this).balance;
         return true;
     }
+
     /// @dev Allows to users withdraw eth in frozen stage 
     function withdrawFrozen()
     public
@@ -271,6 +288,7 @@ contract Token is ERC20 {
         invBalances[msg.sender] = 0;
         msg.sender.transfer(amountWithdraw);
     }
+
     /// @dev Allows an owner to confirm a change settings request.
     function executeSettingsChange(
         uint amount, 
@@ -296,6 +314,7 @@ contract Token is ERC20 {
         tgeSettingsMaxStages = maxStages;
         return true;
     }
+
     //---------------- GETTERS ----------------
     /// @dev Amount of blocks left to the end of this stage of TGE 
     function tgeStageBlockLeft() 
@@ -306,12 +325,14 @@ contract Token is ERC20 {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);
         return tgeStartBlock.add(stage.mul(tgeSettingsBlocksPerStage)).sub(block.number);
     }
+
     function isLive()
     public
     returns(bool)
     {
         return isFrozen;
     }
+
     function tgeCurrentPartInvestor()
     public
     isTgeLive
@@ -320,6 +341,7 @@ contract Token is ERC20 {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
         return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
+
     function tgeNextPartInvestor()
     public
     isTgeLive
@@ -328,12 +350,14 @@ contract Token is ERC20 {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);        
         return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
+
     //---------------- INTERNAL ---------------
     function _finishTge()
     internal
     {
         tgeLive = false;
     }
+
     function _mint(uint _amountProject, uint _amountFounders, uint _amountSender)
     internal
     {
@@ -346,6 +370,7 @@ contract Token is ERC20 {
         totalSupply = totalSupply.add(msg.value);
         Transfer(0x0, msg.sender, _amountSender);
     }
+
     function _internalTgeSetLive()
     internal
     {
