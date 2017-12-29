@@ -133,7 +133,7 @@ contract Token is ERC20 {
     uint tgeStackFounders;
     address public projectWallet;
     address public foundersWallet;
-    address constant public burnAddress = 0x0;
+    address constant public burnAddress = 0xd0B502e2091118C6F7B618D34641a4A628d51c6E;
     mapping (address => uint) public invBalances;
     uint public totalInvSupply;
 
@@ -221,7 +221,7 @@ contract Token is ERC20 {
     }
 
     /// @dev Start new tge stage
-    function setLive()
+    function tgeSetLive()
     public
     only(projectWallet)
     isNotTgeLive
@@ -241,8 +241,8 @@ contract Token is ERC20 {
         balances[burnAddress] = balances[burnAddress].add(_amount);
         totalSupply = totalSupply.sub(_amount);
         msg.sender.transfer(_amount);
-        Transfer(msg.sender, 0x0, _amount);
-        Burn(msg.sender, _amount);
+        Transfer(msg.sender, burnAddress, _amount);
+        Burn(burnAddress, _amount);
         return true;
     }
 

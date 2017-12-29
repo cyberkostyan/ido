@@ -303,7 +303,7 @@ contract MultiSigWallet {
         notNull(destination)
         returns(uint transactionId)
     {
-        transactionId = addTransaction(destination, 0, hex"b98de7c7");
+        transactionId = addTransaction(destination, 0, hex"9d0714b2");
         confirmTransaction(transactionId);
     }
     function goLiveTx(address destination)
