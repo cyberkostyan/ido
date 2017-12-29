@@ -133,7 +133,7 @@ contract Token is ERC20 {
     uint tgeStackFounders;
     address public projectWallet;
     address public foundersWallet;
-    address constant public burnAddress = 0xd0B502e2091118C6F7B618D34641a4A628d51c6E;
+    address constant public burnAddress = address(0);
     mapping (address => uint) public invBalances;
     uint public totalInvSupply;
 
@@ -242,7 +242,7 @@ contract Token is ERC20 {
         totalSupply = totalSupply.sub(_amount);
         msg.sender.transfer(_amount);
         Transfer(msg.sender, burnAddress, _amount);
-        Burn(burnAddress, _amount);
+        Burn(msg.sender, _amount);
         return true;
     }
 
