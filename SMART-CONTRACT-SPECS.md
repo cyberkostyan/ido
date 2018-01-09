@@ -18,6 +18,7 @@ The distribution of new cryptocurrency will be hardcoded into new blockchain, an
  * **Investors** - investors of the project that send ETH to project during TGE rounds.
  * **TGE**, **TGE Round** - token generation event. A period of time measured in number of blocks when any investor can send ETH to contract. In exchange, he receives tokens that can be transferred or traded immediately. When a round of TGE is over all ETH sent to contract is sent back to sender.
  * **TGE Stage**. TGE Rounds are broken into Stages. Each Stage lasts a fixed number of blocks defined by tgeSettings. During a stage the proportion in which generated tokens are distributed between investor, project and foundrs do not change. With each consequitive stage the proportion of tokens to investor increases.
+ * **Burning** - exchanging tokens for ETH. When a contributor decides to liquidate the tokens and receive ETH in exchange, she burns the tokens and receives ETH to the calling address.
 
 ## Specs
 
