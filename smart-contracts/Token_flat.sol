@@ -128,9 +128,6 @@ contract Token is ERC20 {
     uint public tgeSettingsAmountCollect;
     uint public tgeSettingsAmountLeft;
     uint public tgeSettingsMaxStages;
-    uint tgeStackSender;
-    uint tgeStackProject;
-    uint tgeStackFounders;
     address public projectWallet;
     address public foundersWallet;
     address constant public burnAddress = address(0);
@@ -242,7 +239,7 @@ contract Token is ERC20 {
         totalSupply = totalSupply.sub(_amount);
         msg.sender.transfer(_amount);
         Transfer(msg.sender, burnAddress, _amount);
-        Burn(msg.sender, _amount);
+        Burn(burnAddress, _amount);
         return true;
     }
 

@@ -393,6 +393,7 @@ contract MultiSigWallet {
         transactionCount += 1;
         Submission(transactionId);
     }
+
     /*
      * Web3 call functions
      */
@@ -408,6 +409,7 @@ contract MultiSigWallet {
             if (confirmations[transactionId][owners[i]])
                 count += 1;
     }
+
     /// @dev Returns total number of transactions after filers are applied.
     /// @param pending Include pending transactions.
     /// @param executed Include executed transactions.
@@ -422,6 +424,7 @@ contract MultiSigWallet {
                 || executed && transactions[i].executed)
                 count += 1;
     }
+
     /// @dev Returns list of owners.
     /// @return List of owner addresses.
     function getOwners()
@@ -431,6 +434,7 @@ contract MultiSigWallet {
     {
         return owners;
     }
+
     /// @dev Returns array with owner addresses, which confirmed transaction.
     /// @param transactionId Transaction ID.
     /// @return Returns array of owner addresses.
