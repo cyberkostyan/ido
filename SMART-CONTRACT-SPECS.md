@@ -10,6 +10,16 @@ This token will be used solely as a means of payment, the total supply of the to
 
 The distribution of new cryptocurrency will be hardcoded into new blockchain, and to claim it holders of the tokens will need their ethereum private keys that will also work with new blockchain we are creating.
 
+## Definitions
+
+ * **Founders** - the founders of the project that manage the controlling multisig wallet.
+ * **Founders wallets** - the wallets of founders that receive the proportion of minted tokens as ETH is sent to token contract.
+ * **Project wallet** - the wallet that holds the tokens of the project. The tokens are used to compensate contributors to the project. The project wallet is a multisig address that Founders control. It requires N of M founders to sign a transaction of the wallet.
+ * **Investors** - investors of the project that send ETH to project during TGE rounds.
+ * **TGE**, **TGE Round** - token generation event. A period of time measured in number of blocks when any investor can send ETH to contract. In exchange, he receives tokens that can be transferred or traded immediately. When a round of TGE is over all ETH sent to contract is sent back to sender.
+ * **TGE Stage**. TGE Rounds are broken into Stages. Each Stage lasts a fixed number of blocks defined by tgeSettings. During a stage the proportion in which generated tokens are distributed between investor, project and foundrs do not change. With each consequitive stage the proportion of tokens to investor increases.
+ * **Burning** - exchanging tokens for ETH. When a contributor decides to liquidate the tokens and receive ETH in exchange, she burns the tokens and receives ETH to the calling address.
+
 ## Specs
 
 Tokens are backed by ethereum with a 1:1 ratio. When contributors are compensated for their work, token is transferred from project multisig wallet to contributor's wallet. Then contributors at any time they want can exchange the tokens for ETH kept in smart contract witha 1:1 ratio, at wich point the Tokens are burnt. As the amount of tokens issued must always be equal to amount of ETH in the contract. All transaction fees must be paid by caller of contract methods.
