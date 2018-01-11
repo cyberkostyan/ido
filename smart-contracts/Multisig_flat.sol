@@ -93,14 +93,13 @@ contract MultiSigWallet {
             && ownerCount != 0);
         _;
     }
+
     /// @dev Fallback function allows to deposit ether.
-    function()
-        public
-        payable
-    {
+    function() public payable {
         if (msg.value > 0)
             Deposit(msg.sender, msg.value);
     }
+
     /*
      * Public functions
      */
@@ -119,6 +118,7 @@ contract MultiSigWallet {
         required = _required;
         owner = msg.sender;
     }
+
     function setToken(address _token)
     public
     onlyOwner
@@ -127,6 +127,7 @@ contract MultiSigWallet {
         
         token = IToken(_token);
     }
+
     //---------------- TGE SETTINGS -----------
     /// @dev Sends request to change settings
     /// @return Transaction ID
@@ -143,6 +144,7 @@ contract MultiSigWallet {
     ownerExists(msg.sender)
     returns (uint _txIndex) 
     {
+        assert(amount*partInvestor*partProject*blocksPerStage*partInvestorIncreasePerStage*maxStages != 0); //asserting no parameter is zero except partFounders
         _txIndex = settingsRequestsCount;
         settingsRequests[_txIndex] = SettingsRequest({
             amount: amount,
