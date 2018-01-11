@@ -219,31 +219,31 @@ function burn(uint amount) public tgeNotLive returns (bool success) {
 
 Need to check if its possible to pay for transaction with balances of the contract, if so, need to make sure there is enough gas for transaction in the amount being transferred.
 
-## Going live
+## Freezing
 
-The moment the annihilat.io project goes live with MainNet the state of the smart contract will be changed to "frozen":
+The moment the annihilat.io project launches its MainNet the state of the Token smart contract will be changed to "frozen":
 
  3. % of totalSupply of tokens will be distributed to project's multisig wallet account.
  1. All transfers of tokens will be frozen.
  2. All ether remaining in the project will be returned to investors proportionally to the amount of tokens they have originally received in exchange for ETH they have contributed.
 
-This will mean the start of Annihialt.io live network and a full stop for the smart contract. No TGE events can start nor tokens can be exchanged for Ether.
+This will mean the start of Annihialt.io network and a full stop for the smart contract. No TGE events can start nor tokens can be exchanged for Ether.
 
-Going live is also controlled by multisig ofcourse.
+Freezing is also controlled by multisig ofcourse.
 
 ```javascript
 ///
-function requestGoLive() only(founder) public returns (uint confirmationsLeft) {
-  // send go live request.
+function requestFreeze() only(founder) public returns (uint confirmationsLeft) {
+  // send freeze request.
 }
 
-function confirmGoLive() only(founder) public returns (uint confirmationsLeft) {
-    // confirm going live
+function confirmFreeze() only(founder) public returns (uint confirmationsLeft) {
+    // confirm freezing
     // @returns how many confirmations left. 0 if confiremd successfuly and 
-    // the MainNet is live now, all smartcontract transactions frozen, and
+    // the MainNet is launched now, all smartcontract transactions frozen, and
 }
 
-function cancelGoLive() only(founder) public returns (bool success) {
+function cancelFreeze() only(founder) public returns (bool success) {
     // @returns true if cancelled successfully, false otherwise (eg. ther was no request?)
 }
 ```
@@ -253,8 +253,8 @@ function cancelGoLive() only(founder) public returns (bool success) {
 Smart contract should have API that allows to query the state of contract.
 
 ```javascript
-function isLive() returns (bull live) {
-    // Is the mainnet live?
+function isFrozen() returns (bool frozen) {
+    // Has the team launched the MainNet yet?
     // if yes, the smart contract is frozen, and no transactions can take place.
 }
 
