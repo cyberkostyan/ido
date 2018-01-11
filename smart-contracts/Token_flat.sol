@@ -63,8 +63,7 @@ contract ERC20 is Base {
     
     function transferFrom(address _from, address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(3 * 32) returns (bool success) {
         require(_to != address(0));
-        require(_value <= balances[_from]);
-        require(_value <= allowed[_from][msg.sender]);
+        require(_to != address(this));
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
@@ -156,8 +155,10 @@ contract Token is ERC20 {
     }
 
     event Burn(address indexed _owner,  uint _value);
+
     function transfer(address _to, uint _value) public isNotFrozenOnly onlyPayloadSize(2 * 32) returns (bool success) {
         require(_to != address(0));
+        require(_to != address(this));
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
         if(balances[projectWallet] < 1 * BIT){
