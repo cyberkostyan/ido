@@ -261,9 +261,8 @@ contract Token is ERC20 {
     }
 
     //---------------- FROZEN -----------------
-    /// @dev Allows an owner to confirm goLive process
-    /// @return Confirmation status
-    function goLive()
+    /// @dev Allows an owner to confirm freezeng process
+    function setFreeze()
     public
     only(projectWallet)
     isNotFrozenOnly
@@ -322,13 +321,6 @@ contract Token is ERC20 {
     {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);
         return tgeStartBlock.add(stage.mul(tgeSettingsBlocksPerStage)).sub(block.number);
-    }
-
-    function isLive()
-    public
-    returns(bool)
-    {
-        return isFrozen;
     }
 
     function tgeCurrentPartInvestor()

@@ -233,18 +233,8 @@ Freezing is also controlled by multisig ofcourse.
 
 ```javascript
 ///
-function requestFreeze() only(founder) public returns (uint confirmationsLeft) {
+function setFreezeTX() only(founder) public returns (uint transactionId) {
   // send freeze request.
-}
-
-function confirmFreeze() only(founder) public returns (uint confirmationsLeft) {
-    // confirm freezing
-    // @returns how many confirmations left. 0 if confiremd successfuly and 
-    // the MainNet is launched now, all smartcontract transactions frozen, and
-}
-
-function cancelFreeze() only(founder) public returns (bool success) {
-    // @returns true if cancelled successfully, false otherwise (eg. ther was no request?)
 }
 ```
 
