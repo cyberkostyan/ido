@@ -233,7 +233,7 @@ Freezing is also controlled by multisig ofcourse.
 
 ```javascript
 ///
-function setFreezeTX() only(founder) public returns (uint transactionId) {
+function setFreezeTx() only(founder) public returns (uint transactionId) {
   // send freeze request.
 }
 ```
