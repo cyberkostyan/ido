@@ -4,7 +4,7 @@ var expect = chai.expect;
 var MultiSigWallet = artifacts.require("./MultiSigWallet.sol");
 var Token = artifacts.require("./Token.sol");
 
-contract('Test', function(accounts) {
+contract('', function(accounts) {
   var multiSigWallet;
   var token;
   var incorrectCallerAddress = accounts[8];
@@ -13,8 +13,6 @@ contract('Test', function(accounts) {
   async function deploy() {
     multiSigWallet = await  MultiSigWallet.new([accounts[0], accounts[1], accounts[2]], neededConfirmationAmount);
     token = await Token.new(multiSigWallet.address, accounts[0]);
-	//ad = await multiSigWallet.token.call();
-	//console.log('token address in multisig is set to: ', ad)
   }
 
   function toArray(object)  {
@@ -29,9 +27,6 @@ contract('Test', function(accounts) {
 
   describe("Deployment", async function() {
     beforeEach(deploy);
-	console.log('before incorrect caller')
-	//ad = await multiSigWallet.token.call();
-	//console.log(ad)
     it("Incorrect (not multisig owner) call of setToken results in fail.", async function () {
       try {
         await multiSigWallet.setToken(token.address, {from: accounts[1]});
@@ -55,7 +50,7 @@ contract('Test', function(accounts) {
       await multiSigWallet.setToken(token.address, {from: accounts[0]});
     });
 
-    it("Correct caller of setToken results in setting token in multisig contract.", async function() {
+    it("Incorrect caller of tgeSettingsChangeRequest results in fail.", async function() {
       try {
         await multiSigWallet.tgeSettingsChangeRequest(100, 10, 89, 1, 2, 2, 10, {from: incorrectCallerAddress});
       } catch (e) {
@@ -124,7 +119,7 @@ contract('Test', function(accounts) {
     });
   });
 
-  describe("Setting tge", function() {
+  describe("tgeLive", function() {
     beforeEach(async function () {
       await deploy();
       await multiSigWallet.setToken(token.address, {from: accounts[0]});
@@ -136,7 +131,7 @@ contract('Test', function(accounts) {
 
     it("Incorrect caller of setLiveTx results in fail.", async function() {
       try {
-        await multiSigWallet.setLiveTx(multiSigWallet.address, {from: incorrectCallerAddress});
+        await multiSigWallet.setLiveTx(token.address, {from: incorrectCallerAddress});
       } catch (e) {
         return true;
       }
@@ -175,9 +170,10 @@ contract('Test', function(accounts) {
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 95, gas:3000000 });
       try {
-        await token.transfer(0x0, 5, {from: accounts[3]});
+          await token.transfer(0x0, 5, {from: accounts[3]});
       } catch(e) {
-        return true;
+          var balance = await token.balanceOf.call(0x0, {from: accounts[3] });
+          return assert.equal(balance.valueOf(), 0, "Zero address has received tokens while it shouldn't be possible");
       }
       throw new Error();
     });
@@ -188,9 +184,10 @@ contract('Test', function(accounts) {
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 95, gas:3000000 });
       try {
-        await token.transfer(token, 5, {from: accounts[3]});
+        await token.transfer(token.address, 5, {from: accounts[3]});
       } catch(e) {
-        return true;
+          var balance = await token.balanceOf.call(token.address, {from: accounts[3] });
+          return assert.equal(balance.valueOf(), 0, "Token contract has received tokens while it shouldn't be possible");
       }
       throw new Error();
     });
@@ -244,10 +241,9 @@ contract('Test', function(accounts) {
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       var beforeBalance = web3.eth.getBalance(web3.eth.accounts[3]);
-      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: 3000});
+      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: 3000, data: ''});
       var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 3000, gas:3000000 });
       var afterBalance = await web3.eth.getBalance(web3.eth.accounts[3]);
-
       var totalSpend = beforeBalance.sub(afterBalance);
       assert.equal(totalSpend, gas+1000); // Total spend should be equal to the gas of transaction plus the token maximus amount
     });
@@ -303,7 +299,7 @@ contract('Test', function(accounts) {
       });
     });
 
-    it("Changing settings when tge is live results with no changes.", async function() {
+    it("Changing settings when tge is live results in fail.", async function() {
       var transactionId = await multiSigWallet.setLiveTx.call(token.address, {from: accounts[0]});
       await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
@@ -311,23 +307,26 @@ contract('Test', function(accounts) {
       var index = await multiSigWallet.tgeSettingsChangeRequest.call(100, 10, 89, 1, 2, 2, 5, {from: accounts[0]});
       await multiSigWallet.tgeSettingsChangeRequest(100, 10, 89, 1, 2, 2, 5, {from: accounts[0]});
       await multiSigWallet.confirmSettingsChange(index, {from: accounts[0]});
-      await multiSigWallet.confirmSettingsChange(index, {from: accounts[1]});
+      try {
+        await multiSigWallet.confirmSettingsChange(index, {from: accounts[1]});
+      } catch (e) {
+          var tgeSettingsAmount = await token.tgeSettingsAmount.call();
+          var tgeSettingsPartInvestor = await token.tgeSettingsPartInvestor.call();
+          var tgeSettingsPartProject = await token.tgeSettingsPartProject.call();
+          var tgeSettingsPartFounders = await token.tgeSettingsPartFounders.call();
+          var tgeSettingsBlocksPerStage = await token.tgeSettingsBlocksPerStage.call();
+          var tgeSettingsPartInvestorIncreasePerStage = await token.tgeSettingsPartInvestorIncreasePerStage.call();
+          var tgeSettingsMaxStages = await token.tgeSettingsMaxStages.call();
 
-      var tgeSettingsAmount = await token.tgeSettingsAmount.call();
-      var tgeSettingsPartInvestor = await token.tgeSettingsPartInvestor.call();
-      var tgeSettingsPartProject = await token.tgeSettingsPartProject.call();
-      var tgeSettingsPartFounders = await token.tgeSettingsPartFounders.call();
-      var tgeSettingsBlocksPerStage = await token.tgeSettingsBlocksPerStage.call();
-      var tgeSettingsPartInvestorIncreasePerStage = await token.tgeSettingsPartInvestorIncreasePerStage.call();
-      var tgeSettingsMaxStages = await token.tgeSettingsMaxStages.call();
-
-      assert.equal(tgeSettingsAmount.toNumber(), 1000);
-      assert.equal(tgeSettingsPartInvestor.toNumber(), 25);
-      assert.equal(tgeSettingsPartProject.toNumber(), 50);
-      assert.equal(tgeSettingsPartFounders.toNumber(), 50);
-      assert.equal(tgeSettingsBlocksPerStage.toNumber(), 20);
-      assert.equal(tgeSettingsPartInvestorIncreasePerStage.toNumber(), 25);
-      assert.equal(tgeSettingsMaxStages.toNumber(), 10);
+          assert.equal(tgeSettingsAmount.toNumber(), 1000);
+          assert.equal(tgeSettingsPartInvestor.toNumber(), 25);
+          assert.equal(tgeSettingsPartProject.toNumber(), 50);
+          assert.equal(tgeSettingsPartFounders.toNumber(), 50);
+          assert.equal(tgeSettingsBlocksPerStage.toNumber(), 20);
+          assert.equal(tgeSettingsPartInvestorIncreasePerStage.toNumber(), 25);
+          return assert.equal(tgeSettingsMaxStages.toNumber(), 10);
+      }
+      throw new Error();
     });
   });
 
@@ -341,26 +340,26 @@ contract('Test', function(accounts) {
       await multiSigWallet.confirmSettingsChange(index, {from: accounts[1]});
     });
 
-    it("Correct caller of goLiveTx results in freeze.", async function() {
+    it("Correct caller of setFreezeTx results in freeze.", async function() {
       var transactionId = await multiSigWallet.setLiveTx.call(token.address, {from: accounts[0]});
       await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
-      var transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
+      var transactionId = await multiSigWallet.setFreezeTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setFreezeTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       var isFrozen = await token.isFrozen.call();
       assert(isFrozen);
     });
 
-    it("Incorrect caller of goLiveTx results in fail.", async function() {
+    it("Incorrect caller of setFreezeTx results in fail.", async function() {
       var transactionId = await multiSigWallet.setLiveTx.call(token.address, {from: accounts[0]});
       await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       try {
-        await multiSigWallet.goLiveTx(token.address, {from: incorrectCallerAddress});
+        await multiSigWallet.setFreezeTx(token.address, {from: incorrectCallerAddress});
       } catch(e) {
         return true;
       }
@@ -374,8 +373,8 @@ contract('Test', function(accounts) {
 
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 95, gas:3000000 });
 
-      var transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
+      var transactionId = await multiSigWallet.setFreezeTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setFreezeTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       try {
@@ -393,8 +392,8 @@ contract('Test', function(accounts) {
 
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 95, gas:3000000 });
 
-      var transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
+      var transactionId = await multiSigWallet.setFreezeTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setFreezeTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       try {
@@ -428,8 +427,8 @@ contract('Test', function(accounts) {
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: web3.toWei(8, "ether"), gas:3000000 });
       var beforeBalance = await web3.eth.getBalance(web3.eth.accounts[3]);
 
-      transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
+      transactionId = await multiSigWallet.setFreezeTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setFreezeTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       var gas = await token.withdrawFrozen.estimateGas({from: accounts[3]});
@@ -446,8 +445,8 @@ contract('Test', function(accounts) {
       await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
-      var transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
+      var transactionId = await multiSigWallet.setFreezeTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setFreezeTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       try {
@@ -476,8 +475,8 @@ contract('Test', function(accounts) {
 
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: web3.toWei(10, "ether"), gas:3000000 });
 
-      var transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
+      var transactionId = await multiSigWallet.setFreezeTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setFreezeTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       try {
@@ -485,7 +484,7 @@ contract('Test', function(accounts) {
       } catch(e) {
         return true;
       }
-      throw new Error();
+      throw new Error()
     });
 
     it("Calling burn when NOT frozen results correct Ether transfer.", async function() {
@@ -494,10 +493,6 @@ contract('Test', function(accounts) {
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
       await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: web3.toWei(8, "ether"), gas:3000000 });
       var beforeBalance = await web3.eth.getBalance(web3.eth.accounts[3]);
-
-      transactionId = await multiSigWallet.goLiveTx.call(token.address, {from: accounts[0]});
-      await multiSigWallet.goLiveTx(token.address, {from: accounts[0]});
-      await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       var gas = await token.burn.estimateGas(web3.toWei(1, "ether"), {from: accounts[3]});
       await token.burn(web3.toWei(1, "ether"), {from: accounts[3]});

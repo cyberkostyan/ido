@@ -10,6 +10,8 @@ contract IToken {
         uint maxStages
     );
 }
+
+
 contract MultiSigWallet {
     uint constant public MAX_OWNER_COUNT = 50;
     event Confirmation(address indexed sender, uint indexed transactionId);
@@ -28,7 +30,7 @@ contract MultiSigWallet {
     uint public required;
     uint public transactionCount;
     
-    IToken token;
+    IToken public token;
     struct SettingsRequest 
     {
         uint amount;
@@ -200,6 +202,17 @@ contract MultiSigWallet {
         }
         return false;
     }
+
+    function getSettingChangeConfirmationCount(uint _txIndex)
+        public
+        constant
+        returns (uint count)
+    {
+        for (uint i=0; i<owners.length; i++)
+            if (settingsRequests[_txIndex].confirmations[owners[i]])
+                count += 1;
+    }
+
     /// @dev Shows what settings were requested in a settings change request
     function viewSettingsChange(uint _txIndex) 
     public
@@ -216,6 +229,7 @@ contract MultiSigWallet {
             request.maxStages
         );
     }
+
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
     /// @param owner Address of new owner.
     function addOwner(address owner)
@@ -460,6 +474,7 @@ contract MultiSigWallet {
         for (i=0; i<count; i++)
             _confirmations[i] = confirmationsTemp[i];
     }
+
     /// @dev Returns list of transaction IDs in defined range.
     /// @param from Index start position of transaction array.
     /// @param to Index end position of transaction array.

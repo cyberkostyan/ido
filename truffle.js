@@ -7,7 +7,8 @@ module.exports = {
     development: {
       host: "localhost",
       port: 8545, // port where your blockchain is running 
-      network_id: "*"
+      network_id: "*",
+      gas: 6000000
     }
   },
   solc: {
