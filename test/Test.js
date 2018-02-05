@@ -120,7 +120,7 @@ contract('', function(accounts) {
   });
 
   describe("tgeLive", function() {
-      var tgeSettingsAmountOriginal = 10**18
+      var tgeSettingsAmountOriginal = 10**16
     beforeEach(async function () {
       await deploy();
       await multiSigWallet.setToken(token.address, {from: accounts[0]});
@@ -243,12 +243,13 @@ contract('', function(accounts) {
       await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
+      var valueToSend = 10**18;
       var beforeBalance = web3.eth.getBalance(web3.eth.accounts[3]);
-      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: 3*10**17, data: ''});
-      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 3*10**17, gas:3000000 });
+      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: valueToSend, data: ''});
+      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: valueToSend, gas:3000000 });
       var afterBalance = await web3.eth.getBalance(web3.eth.accounts[3]);
       var totalSpend = beforeBalance.sub(afterBalance);
-      assert.equal(totalSpend.valueOf(), gas+3*10**17, 'Totalspend value is incorrect.'); // Total spend should be equal to the gas of transaction plus the token maximus amount
+      assert.equal(totalSpend.valueOf(), gas+tgeSettingsAmountOriginal, 'Totalspend value is incorrect.'); // Total spend should be equal to the gas of transaction plus the token maximus amount
     });
 
     it("Sending Ether results in correct changes of tgeSettingsAmount and totalSupply.", async function() {
@@ -279,8 +280,8 @@ contract('', function(accounts) {
       var afterAmountCollect = await token.tgeSettingsAmountCollect.call();
       var afterTotalSupply = await token.totalSupply.call();
 
-      assert.equal(afterTotalSupply, tgeSettingsAmountOriginal, 'Total supply after second transaction is incorrect');
-      assert.equal(afterAmountCollect, tgeSettingsAmountOriginal, 'tgeSettingsAmountCollect after second transaction is incorrect');
+      assert.equal(afterTotalSupply.valueOf(), tgeSettingsAmountOriginal, 'Total supply after second transaction is incorrect');
+      assert.equal(afterAmountCollect.valueOf(), tgeSettingsAmountOriginal, 'tgeSettingsAmountCollect after second transaction is incorrect');
     });
 
     it("Fullfiling target amount results in tge finish (=not live).", async function() {

@@ -1,4 +1,5 @@
 pragma solidity ^0.4.15;
+
 library SafeMath {
     function mul(uint256 a, uint256 b) internal constant returns (uint256) {
         uint256 c = a * b;
@@ -124,7 +125,6 @@ contract Token is ERC20 {
     uint public tgeSettingsBlocksPerStage;
     uint public tgeSettingsPartInvestorIncreasePerStage;
     uint public tgeSettingsAmountCollect;
-    //uint public tgeSettingsAmountLeft;
     uint public tgeSettingsMaxStages;
     address public projectWallet;
     address public foundersWallet;
@@ -355,9 +355,8 @@ contract Token is ERC20 {
         balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
         balances[msg.sender] = balances[msg.sender].add(_amountSender);
         invBalances[msg.sender] = invBalances[msg.sender].add(_amountSender);
-        tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(msg.value);
-        //tgeSettingsAmountLeft = tgeSettingsAmountLeft.sub(msg.value);
-        totalSupply = totalSupply.add(msg.value);
+        tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(_amountProject+_amountFounders+_amountSender);
+        totalSupply = totalSupply.add(_amountProject+_amountFounders+_amountSender);
         Transfer(0x0, msg.sender, _amountSender);
         Transfer(0x0, projectWallet, _amountProject);
         Transfer(0x0, foundersWallet, _amountFounders);
@@ -368,7 +367,6 @@ contract Token is ERC20 {
     {
         tgeLive = true;
         tgeStartBlock = block.number;
-        //tgeSettingsAmountLeft = tgeSettingsAmount;
         tgeSettingsAmountCollect = 0;
     }
 }
