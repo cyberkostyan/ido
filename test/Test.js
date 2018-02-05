@@ -120,11 +120,14 @@ contract('', function(accounts) {
   });
 
   describe("tgeLive", function() {
+      var tgeSettingsAmountOriginal = 10**18
     beforeEach(async function () {
       await deploy();
       await multiSigWallet.setToken(token.address, {from: accounts[0]});
-      var index = await multiSigWallet.tgeSettingsChangeRequest.call(1000, 25, 50, 50, 20, 25, 10, {from: accounts[0]});
-      await multiSigWallet.tgeSettingsChangeRequest(1000, 25, 50, 50, 20, 25, 10, {from: accounts[0]});
+      var index = await multiSigWallet.tgeSettingsChangeRequest.call(tgeSettingsAmountOriginal, 25, 50, 50, 20, 25, 10, {from: accounts[0]});
+        //var index = await multiSigWallet.tgeSettingsChangeRequest.call(1000, 25, 50, 50, 20, 25, 10, {from: accounts[0]});
+      await multiSigWallet.tgeSettingsChangeRequest(tgeSettingsAmountOriginal, 25, 50, 50, 20, 25, 10, {from: accounts[0]});
+        //await multiSigWallet.tgeSettingsChangeRequest(1000, 25, 50, 50, 20, 25, 10, {from: accounts[0]});
       await multiSigWallet.confirmSettingsChange(index, {from: accounts[0]});
       await multiSigWallet.confirmSettingsChange(index, {from: accounts[1]});
     });
@@ -241,11 +244,43 @@ contract('', function(accounts) {
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
       var beforeBalance = web3.eth.getBalance(web3.eth.accounts[3]);
-      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: 3000, data: ''});
-      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 3000, gas:3000000 });
+      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: 3*10**17, data: ''});
+      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 3*10**17, gas:3000000 });
       var afterBalance = await web3.eth.getBalance(web3.eth.accounts[3]);
       var totalSpend = beforeBalance.sub(afterBalance);
-      assert.equal(totalSpend, gas+1000); // Total spend should be equal to the gas of transaction plus the token maximus amount
+      assert.equal(totalSpend.valueOf(), gas+3*10**17, 'Totalspend value is incorrect.'); // Total spend should be equal to the gas of transaction plus the token maximus amount
+    });
+
+    it("Sending Ether results in correct changes of tgeSettingsAmount and totalSupply.", async function() {
+      //Here we initiate 2 transactions: one with low value (less than tgeSettingsAmount), another with high (greater than tgeSettingsAmount)
+      //and check whether tgeSettingsAmount and totalSupply are correct after each of transactions.
+      var firstValue = 0.3 * tgeSettingsAmountOriginal;
+      var secondValue = 3 * tgeSettingsAmountOriginal;
+
+      var transactionId = await multiSigWallet.setLiveTx.call(token.address, {from: accounts[0]});
+      await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
+      await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
+
+      var beforeAmountCollect = await token.tgeSettingsAmountCollect.call();
+      var beforeTotalSupply = await token.totalSupply.call();
+
+      var gas = web3.eth.estimateGas({ from: accounts[3], to: token.address, value: firstValue, data: ''});
+      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: firstValue, gas:3000000 });
+
+      var middleAmountCollect = await token.tgeSettingsAmountCollect.call();
+      var middleTotalSupply = await token.totalSupply.call();
+
+      assert.equal(middleTotalSupply, firstValue.valueOf(), 'Total supply after first transaction is incorrect');
+      assert.equal(middleAmountCollect, firstValue.valueOf(), 'tgeSettingsAmountCollect after first transaction is incorrect');
+
+      var gas2 = web3.eth.estimateGas({ from: accounts[5], to: token.address, value: secondValue, data: ''});
+      var transaction2 = await web3.eth.sendTransaction({ from: accounts[5], to: token.address, value: secondValue, gas:3000000 });
+
+      var afterAmountCollect = await token.tgeSettingsAmountCollect.call();
+      var afterTotalSupply = await token.totalSupply.call();
+
+      assert.equal(afterTotalSupply, tgeSettingsAmountOriginal, 'Total supply after second transaction is incorrect');
+      assert.equal(afterAmountCollect, tgeSettingsAmountOriginal, 'tgeSettingsAmountCollect after second transaction is incorrect');
     });
 
     it("Fullfiling target amount results in tge finish (=not live).", async function() {
@@ -253,7 +288,7 @@ contract('', function(accounts) {
       await multiSigWallet.setLiveTx(token.address, {from: accounts[0]});
       await multiSigWallet.confirmTransaction(transactionId, {from: accounts[1]});
 
-      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: 3000, gas:3000000 });
+      var transaction = await web3.eth.sendTransaction({ from: accounts[3], to: token.address, value: tgeSettingsAmountOriginal, gas:3000000 });
 
       var isLive = await token.tgeLive.call();
       assert(!isLive);
@@ -318,13 +353,13 @@ contract('', function(accounts) {
           var tgeSettingsPartInvestorIncreasePerStage = await token.tgeSettingsPartInvestorIncreasePerStage.call();
           var tgeSettingsMaxStages = await token.tgeSettingsMaxStages.call();
 
-          assert.equal(tgeSettingsAmount.toNumber(), 1000);
-          assert.equal(tgeSettingsPartInvestor.toNumber(), 25);
-          assert.equal(tgeSettingsPartProject.toNumber(), 50);
-          assert.equal(tgeSettingsPartFounders.toNumber(), 50);
-          assert.equal(tgeSettingsBlocksPerStage.toNumber(), 20);
-          assert.equal(tgeSettingsPartInvestorIncreasePerStage.toNumber(), 25);
-          return assert.equal(tgeSettingsMaxStages.toNumber(), 10);
+          assert.equal(tgeSettingsAmount.toNumber(), tgeSettingsAmountOriginal, 'tgeSettingsAmount is incorrect');
+          assert.equal(tgeSettingsPartInvestor.toNumber(), 25, 'tgeSettingsPartInvestor is incorrect');
+          assert.equal(tgeSettingsPartProject.toNumber(), 50, 'tgeSettingsPartProject is incorrect');
+          assert.equal(tgeSettingsPartFounders.toNumber(), 50, 'tgeSettingsPartProject is incorrect');
+          assert.equal(tgeSettingsBlocksPerStage.toNumber(), 20, 'tgeSettingsBlocksPerStage is incorrect');
+          assert.equal(tgeSettingsPartInvestorIncreasePerStage.toNumber(), 25, 'tgeSettingsPartInvestorIncreasePerStage is incorrect');
+          return assert.equal(tgeSettingsMaxStages.toNumber(), 10, 'tgeSettingsMaxStages is incorrect');
       }
       throw new Error();
     });
