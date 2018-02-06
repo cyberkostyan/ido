@@ -144,7 +144,7 @@ contract Token is ERC20 {
 
     modifier maxStagesIsNotAchieved() {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
-        require(stage <= tgeSettingsMaxStages);
+        require(stage < tgeSettingsMaxStages);
         _;
     }
 
