@@ -143,8 +143,10 @@ contract Token is ERC20 {
     }
 
     modifier maxStagesIsNotAchieved() {
-        uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
-        require(stage < tgeSettingsMaxStages);
+        if (totalSupply > BIT) {
+            uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
+            require(stage < tgeSettingsMaxStages);
+        }
         _;
     }
 
@@ -170,7 +172,7 @@ contract Token is ERC20 {
     /// @dev Constructor
     /// @param _projectWallet Wallet of project
     /// @param _foundersWallet Wallet of founders
-    function Token(address _projectWallet, address _foundersWallet){
+    function Token(address _projectWallet, address _foundersWallet) public {
         projectWallet = _projectWallet;
         foundersWallet = _foundersWallet;
     }
@@ -316,6 +318,7 @@ contract Token is ERC20 {
     /// @dev Amount of blocks left to the end of this stage of TGE 
     function tgeStageBlockLeft() 
     public 
+    view
     isTgeLive
     returns(uint)
     {
@@ -325,6 +328,7 @@ contract Token is ERC20 {
 
     function tgeCurrentPartInvestor()
     public
+    view
     isTgeLive
     returns(uint)
     {
@@ -334,6 +338,7 @@ contract Token is ERC20 {
 
     function tgeNextPartInvestor()
     public
+    view
     isTgeLive
     returns(uint)
     {
