@@ -111,8 +111,8 @@ contract ERC20 is Base {
 
 
 contract Token is ERC20 {
-    string public name = "Annihilat.io Token";
-    string public symbol = "ANNI";
+    string public name = "Array.io Token";
+    string public symbol = "RAY";
     uint8 public decimals = 18;
     uint public constant BIT = 10**18;
     uint public constant BASE = 10000 * BIT;
