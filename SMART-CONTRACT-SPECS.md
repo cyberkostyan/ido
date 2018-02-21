@@ -287,6 +287,7 @@ Example round of tge with the following tge settings:
  * tgeSettingsPartFounders	50
  * tgeSettingsBlocksPerStage	1000
  * tgeSettingsPartInvestorIncreasePerStage	25
+ * tgeSettingsMaxStages 10
 
 | block # | ETH received | PartInvestor | PartProject | PartFounders | TokensInvestor | TokensProject | TokensFounders | AmountCollected | AmountLeft |
 |-------:|------:|------:| ------:|------:|------:|------:|------:|------:|------:|
