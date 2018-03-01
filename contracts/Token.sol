@@ -1,60 +1,61 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 library SafeMath {
-    function mul(uint256 a, uint256 b) internal constant returns (uint256) {
+
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a * b;
         assert(a == 0 || c / a == b);
         return c;
     }
-    function div(uint256 a, uint256 b) internal constant returns (uint256) {
+
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
         // assert(b > 0); // Solidity automatically throws when dividing by 0
         uint256 c = a / b;
         // assert(a == b * c + a % b); // There is no case in which this doesn't hold
         return c;
     }
-    function sub(uint256 a, uint256 b) internal constant returns (uint256) {
+
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         assert(b <= a);
         return a - b;
     }
-    function add(uint256 a, uint256 b) internal constant returns (uint256) {
+
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
         assert(c >= a);
         return c;
     }
+
 }
 
+
 contract Base {
-    modifier only(address allowed) {
-        require(msg.sender == allowed);
-        _;
-    }
-    modifier onlyPayloadSize(uint size) {
-        assert(msg.data.length == size + 4);
-        _;
-    } 
-    // *************************************************
-    // *          reentrancy handling                  *
-    // *************************************************
+
     uint private bitlocks = 0;
-    modifier noReentrancy(uint m) {
-        var _locks = bitlocks;
-        require(_locks & m <= 0);
-        bitlocks |= m;
-        _;
-        bitlocks = _locks;
-    }
+
     modifier noAnyReentrancy {
-        var _locks = bitlocks;
+        uint _locks = bitlocks;
         require(_locks <= 0);
         bitlocks = uint(-1);
         _;
         bitlocks = _locks;
     }
-    modifier reentrant { _; }
+
+    modifier only(address allowed) {
+        require(msg.sender == allowed);
+        _;
+    }
+
+    modifier onlyPayloadSize(uint size) {
+        assert(msg.data.length == size + 4);
+        _;
+    } 
+
 }
 
 
 contract ERC20 is Base {
+    
     using SafeMath for uint;
     uint public totalSupply;
     bool public isFrozen = false;
@@ -71,7 +72,7 @@ contract ERC20 is Base {
         return true;
     }
 
-    function balanceOf(address _owner) public constant returns (uint balance) {
+    function balanceOf(address _owner) public view returns (uint balance) {
         return balances[_owner];
     }
 
@@ -111,11 +112,11 @@ contract ERC20 is Base {
 
 
 contract Token is ERC20 {
+
     string public name = "Array.io Token";
     string public symbol = "RAY";
     uint8 public decimals = 18;
     uint public constant BIT = 10**18;
-    uint public constant BASE = 10000 * BIT;
     bool public tgeLive = false;
     uint public tgeStartBlock;
     uint public tgeSettingsAmount;
@@ -162,7 +163,7 @@ contract Token is ERC20 {
         require(_to != address(this));
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        if(balances[projectWallet] < 1 * BIT){
+        if(balances[projectWallet] < 1 * BIT && !tgeLive){
             _internalTgeSetLive();
         }
         Transfer(msg.sender, _to, _value);
@@ -208,35 +209,20 @@ contract Token is ERC20 {
         msg.sender.transfer(refundAmount);
     }
 
-    function setFinished()
-    public
-    only(projectWallet)
-    isNotFrozenOnly
-    isTgeLive
-    {
+    function setFinished() public only(projectWallet) isNotFrozenOnly isTgeLive {
         if(balances[projectWallet] > 1*BIT){
             _finishTge();
         }
     }
 
     /// @dev Start new tge stage
-    function tgeSetLive()
-    public
-    only(projectWallet)
-    isNotTgeLive
-    isNotFrozenOnly
-    {
+    function tgeSetLive() public only(projectWallet) isNotTgeLive isNotFrozenOnly {
         _internalTgeSetLive();
     }
 
     /// @dev Burn tokens to burnAddress from msg.sender wallet
     /// @param _amount Amount of tokens
-    function burn(uint _amount)
-    public 
-    isNotFrozenOnly
-    noAnyReentrancy    
-    returns(bool _success)
-    {
+    function burn(uint _amount) public isNotFrozenOnly noAnyReentrancy returns(bool _success) {
         balances[msg.sender] = balances[msg.sender].sub(_amount);
         balances[burnAddress] = balances[burnAddress].add(_amount);
         totalSupply = totalSupply.sub(_amount);
@@ -249,11 +235,7 @@ contract Token is ERC20 {
     /// @dev _foundersWallet Wallet of founders
     /// @param dests array of addresses 
     /// @param values array amount of tokens to transfer    
-    function multiTransfer(address[] dests, uint[] values) 
-    public 
-    isNotFrozenOnly
-    returns(uint) 
-    {
+    function multiTransfer(address[] dests, uint[] values) public isNotFrozenOnly returns(uint) {
         uint i = 0;
         while (i < dests.length) {
            transfer(dests[i], values[i]);
@@ -264,25 +246,15 @@ contract Token is ERC20 {
 
     //---------------- FROZEN -----------------
     /// @dev Allows an owner to confirm freezeng process
-    function setFreeze()
-    public
-    only(projectWallet)
-    isNotFrozenOnly
-    returns (bool)
-    {
+    function setFreeze() public only(projectWallet) isNotFrozenOnly returns (bool) {
         isFrozen = true;
         totalInvSupply = address(this).balance;
         return true;
     }
 
     /// @dev Allows to users withdraw eth in frozen stage 
-    function withdrawFrozen()
-    public
-    isFrozenOnly
-    noAnyReentrancy
-    {
+    function withdrawFrozen() public isFrozenOnly noAnyReentrancy {
         require(invBalances[msg.sender] > 0);
-        
         uint amountWithdraw = totalInvSupply.mul(invBalances[msg.sender]).div(totalSupply);        
         invBalances[msg.sender] = 0;
         msg.sender.transfer(amountWithdraw);
@@ -316,46 +288,27 @@ contract Token is ERC20 {
 
     //---------------- GETTERS ----------------
     /// @dev Amount of blocks left to the end of this stage of TGE 
-    function tgeStageBlockLeft() 
-    public 
-    view
-    isTgeLive
-    returns(uint)
-    {
+    function tgeStageBlockLeft() public view isTgeLive returns(uint) {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
         return tgeStartBlock.add(stage.mul(tgeSettingsBlocksPerStage)).sub(block.number);
     }
 
-    function tgeCurrentPartInvestor()
-    public
-    view
-    isTgeLive
-    returns(uint)
-    {
+    function tgeCurrentPartInvestor() public view isTgeLive returns(uint) {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
         return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
 
-    function tgeNextPartInvestor()
-    public
-    view
-    isTgeLive
-    returns(uint)
-    {
+    function tgeNextPartInvestor() public view isTgeLive returns(uint) {
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage).add(1);        
         return tgeSettingsPartInvestor.add(stage.mul(tgeSettingsPartInvestorIncreasePerStage));
     }
 
     //---------------- INTERNAL ---------------
-    function _finishTge()
-    internal
-    {
+    function _finishTge() internal {
         tgeLive = false;
     }
 
-    function _mint(uint _amountProject, uint _amountFounders, uint _amountSender)
-    internal
-    {
+    function _mint(uint _amountProject, uint _amountFounders, uint _amountSender) internal {
         balances[projectWallet] = balances[projectWallet].add(_amountProject);
         balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
         balances[msg.sender] = balances[msg.sender].add(_amountSender);
@@ -367,11 +320,10 @@ contract Token is ERC20 {
         Transfer(0x0, foundersWallet, _amountFounders);
     }
 
-    function _internalTgeSetLive()
-    internal
-    {
+    function _internalTgeSetLive() internal {
         tgeLive = true;
         tgeStartBlock = block.number;
         tgeSettingsAmountCollect = 0;
     }
+
 }
