@@ -68,33 +68,33 @@ contract MultiSigWallet {
         _;
     }
     
-    modifier ownerDoesNotExist(address owner) {
-        require(!isOwner[owner]);
+    modifier ownerDoesNotExist(address _owner) {
+        require(!isOwner[_owner]);
         _;
     }
     
-    modifier ownerExists(address owner) {
-        require(isOwner[owner]);
+    modifier ownerExists(address _owner) {
+        require(isOwner[_owner]);
         _;
     }
 
-    modifier transactionExists(uint transactionId) {
-        require(transactions[transactionId].destination != 0);
+    modifier transactionExists(uint _transactionId) {
+        require(transactions[_transactionId].destination != 0);
         _;
     }
 
-    modifier confirmed(uint transactionId, address owner) {
-        require(confirmations[transactionId][owner]);
+    modifier confirmed(uint _transactionId, address _owner) {
+        require(confirmations[_transactionId][_owner]);
         _;
     }
 
-    modifier notConfirmed(uint transactionId, address owner) {
-        require(!confirmations[transactionId][owner]);
+    modifier notConfirmed(uint _transactionId, address _owner) {
+        require(!confirmations[_transactionId][_owner]);
         _;
     }
 
-    modifier notExecuted(uint transactionId) {
-        require(!transactions[transactionId].executed);
+    modifier notExecuted(uint _transactionId) {
+        require(!transactions[_transactionId].executed);
         _;
     }
 
@@ -201,7 +201,7 @@ contract MultiSigWallet {
         return false;
     }
 
-    function getSettingChangeConfirmationCount(uint _txIndex) public view returns (uint count) {
+    function getSettingsChangeConfirmationCount(uint _txIndex) public view returns (uint count) {
         for (uint i=0; i<owners.length; i++)
             if (settingsRequests[_txIndex].confirmations[owners[i]])
                 count += 1;
@@ -213,7 +213,7 @@ contract MultiSigWallet {
     constant
     ownerExists(msg.sender)  
     returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partInvestorIncreasePerStage, uint maxStages) {
-        SettingsRequest storage request = settingsRequests[_txIndex];
+        SettingsRequest memory request = settingsRequests[_txIndex];
         return (
             request.amount,
             request.partInvestor, 
@@ -226,55 +226,55 @@ contract MultiSigWallet {
     }
 
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
-    /// @param owner Address of new owner.
-    function addOwner(address owner)
+    /// @param _owner Address of new owner.
+    function addOwner(address _owner)
         public
         onlyWallet
-        ownerDoesNotExist(owner)
-        notNull(owner)
+        ownerDoesNotExist(_owner)
+        notNull(_owner)
         validRequirement(owners.length + 1, required)
     {
         isOwner[owner] = true;
-        owners.push(owner);
-        OwnerAddition(owner);
+        owners.push(_owner);
+        OwnerAddition(_owner);
     }
     /// @dev Allows to remove an owner. Transaction has to be sent by wallet.
-    /// @param owner Address of owner.
-    function removeOwner(address owner)
+    /// @param _owner Address of owner.
+    function removeOwner(address _owner)
         public
         onlyWallet
-        ownerExists(owner)
+        ownerExists(_owner)
     {
-        isOwner[owner] = false;
+        isOwner[_owner] = false;
         for (uint i=0; i<owners.length - 1; i++)
-            if (owners[i] == owner) {
+            if (owners[i] == _owner) {
                 owners[i] = owners[owners.length - 1];
                 break;
             }
         owners.length -= 1;
         if (required > owners.length)
             changeRequirement(owners.length);
-        OwnerRemoval(owner);
+        OwnerRemoval(_owner);
     }
 
     /// @dev Allows to replace an owner with a new owner. Transaction has to be sent by wallet.
-    /// @param owner Address of owner to be replaced.
-    /// @param owner Address of new owner.
-    function replaceOwner(address owner, address newOwner)
+    /// @param _owner Address of owner to be replaced.
+    /// @param _newOwner Address of new owner.
+    function replaceOwner(address _owner, address _newOwner)
         public
         onlyWallet
-        ownerExists(owner)
-        ownerDoesNotExist(newOwner)
+        ownerExists(_owner)
+        ownerDoesNotExist(_newOwner)
     {
         for (uint i=0; i<owners.length; i++)
-            if (owners[i] == owner) {
-                owners[i] = newOwner;
+            if (owners[i] == _owner) {
+                owners[i] = _newOwner;
                 break;
             }
-        isOwner[owner] = false;
-        isOwner[newOwner] = true;
-        OwnerRemoval(owner);
-        OwnerAddition(newOwner);
+        isOwner[_owner] = false;
+        isOwner[_newOwner] = true;
+        OwnerRemoval(_owner);
+        OwnerAddition(_newOwner);
     }
 
     /// @dev Allows to change the number of required confirmations. Transaction has to be sent by wallet.
@@ -339,16 +339,16 @@ contract MultiSigWallet {
     }
 
     /// @dev Allows anyone to execute a confirmed transaction.
-    /// @param transactionId Transaction ID.
-    function executeTransaction(uint transactionId) public notExecuted(transactionId) {
-        if (isConfirmed(transactionId)) {
-            Transaction tx = transactions[transactionId];
-            tx.executed = true;
-            if (tx.destination.call.value(tx.value)(tx.data))
-                Execution(transactionId);
+    /// @param _transactionId Transaction ID.
+    function executeTransaction(uint _transactionId) public notExecuted(_transactionId) {
+        if (isConfirmed(_transactionId)) {
+            Transaction storage trx = transactions[_transactionId];
+            trx.executed = true;
+            if (trx.destination.call.value(trx.value)(trx.data))
+                Execution(_transactionId);
             else {
-                ExecutionFailure(transactionId);
-                tx.executed = false;
+                ExecutionFailure(_transactionId);
+                trx.executed = false;
             }
         }
     }

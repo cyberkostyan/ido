@@ -56,6 +56,8 @@ contract Base {
 
 contract ERC20 is Base {
     
+    mapping (address => uint) balances;
+    mapping (address => mapping (address => uint)) allowed;
     using SafeMath for uint;
     uint public totalSupply;
     bool public isFrozen = false;
@@ -96,8 +98,6 @@ contract ERC20 is Base {
         return allowed[_owner][_spender];
     }
 
-    mapping (address => uint) balances;
-    mapping (address => mapping (address => uint)) allowed;
     modifier isNotFrozenOnly() {
         require(!isFrozen);
         _;
@@ -215,6 +215,15 @@ contract Token is ERC20 {
         }
     }
 
+    function updateStatus() public {
+        if (totalSupply > BIT) {
+            uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);
+            if (stage > tgeSettingsMaxStages) {
+                tgeLive = false;
+            }
+        }
+    }
+
     /// @dev Start new tge stage
     function tgeSetLive() public only(projectWallet) isNotTgeLive isNotFrozenOnly {
         _internalTgeSetLive();
@@ -245,6 +254,7 @@ contract Token is ERC20 {
     }
 
     //---------------- FROZEN -----------------
+
     /// @dev Allows an owner to confirm freezeng process
     function setFreeze() public only(projectWallet) isNotFrozenOnly returns (bool) {
         isFrozen = true;
