@@ -209,10 +209,7 @@ contract MultiSigWallet {
     }
 
     /// @dev Shows what settings were requested in a settings change request
-    function viewSettingsChange(uint _txIndex) 
-    public
-    constant
-    ownerExists(msg.sender)  
+    function viewSettingsChange(uint _txIndex) public constant 
     returns (uint amount, uint partInvestor, uint partProject, uint partFounders, uint blocksPerStage, uint partInvestorIncreasePerStage, uint maxStages) {
         SettingsRequest memory request = settingsRequests[_txIndex];
         return (
