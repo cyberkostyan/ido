@@ -164,6 +164,7 @@ contract MultiSigWallet {
             executed: false
         });
         settingsRequestsCount++;
+        confirmSettingsChange(_txIndex);
         return _txIndex;
     }
 
