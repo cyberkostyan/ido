@@ -190,7 +190,7 @@ contract Token is ERC20 {
     {
         require(msg.value > 0);
         if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
-            _finishTge();
+            tgeLive = false;
         }
         uint refundAmount = 0;
         uint senderAmount = msg.value;
@@ -207,11 +207,12 @@ contract Token is ERC20 {
         uint amountSender = senderAmount.sub(amountProject).sub(amountFounders);
         _mint(amountProject, amountFounders, amountSender);
         msg.sender.transfer(refundAmount);
+        this.updateStatus();
     }
 
     function setFinished() public only(projectWallet) isNotFrozenOnly isTgeLive {
         if(balances[projectWallet] > 1*BIT){
-            _finishTge();
+            tgeLive = false;
         }
     }
 
@@ -314,10 +315,6 @@ contract Token is ERC20 {
     }
 
     //---------------- INTERNAL ---------------
-    function _finishTge() internal {
-        tgeLive = false;
-    }
-
     function _mint(uint _amountProject, uint _amountFounders, uint _amountSender) internal {
         balances[projectWallet] = balances[projectWallet].add(_amountProject);
         balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
