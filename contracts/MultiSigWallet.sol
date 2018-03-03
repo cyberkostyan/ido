@@ -103,11 +103,11 @@ contract MultiSigWallet {
         _;
     }
 
-    modifier validRequirement(uint ownerCount, uint _required) {
-        require(ownerCount < MAX_OWNER_COUNT
-            && _required <= ownerCount
+    modifier validRequirement(uint _ownerCount, uint _required) {
+        require(_ownerCount < MAX_OWNER_COUNT
+            && _required <= _ownerCount
             && _required != 0
-            && ownerCount != 0);
+            && _ownerCount != 0);
         _;
     }
 
@@ -191,10 +191,10 @@ contract MultiSigWallet {
         }
     }
 
-    function isConfirmedSettingsRequest(uint transactionId) public view returns (bool) {
+    function isConfirmedSettingsRequest(uint _transactionId) public view returns (bool) {
         uint count = 0;
         for (uint i = 0; i < owners.length; i++) {
-            if (settingsRequests[transactionId].confirmations[owners[i]])
+            if (settingsRequests[_transactionId].confirmations[owners[i]])
                 count += 1;
             if (count == required)
                 return true;
@@ -232,7 +232,7 @@ contract MultiSigWallet {
         notNull(_owner)
         validRequirement(owners.length + 1, required)
     {
-        isOwner[owner] = true;
+        isOwner[_owner] = true;
         owners.push(_owner);
         OwnerAddition(_owner);
     }
@@ -312,28 +312,28 @@ contract MultiSigWallet {
     }
 
     /// @dev Allows an owner to confirm a transaction.
-    /// @param transactionId Transaction ID.
-    function confirmTransaction(uint transactionId)
+    /// @param _transactionId Transaction ID.
+    function confirmTransaction(uint _transactionId)
         public
         ownerExists(msg.sender)
-        transactionExists(transactionId)
-        notConfirmed(transactionId, msg.sender)
+        transactionExists(_transactionId)
+        notConfirmed(_transactionId, msg.sender)
     {
-        confirmations[transactionId][msg.sender] = true;
-        Confirmation(msg.sender, transactionId);
-        executeTransaction(transactionId);
+        confirmations[_transactionId][msg.sender] = true;
+        Confirmation(msg.sender, _transactionId);
+        executeTransaction(_transactionId);
     }
 
     /// @dev Allows an owner to revoke a confirmation for a transaction.
-    /// @param transactionId Transaction ID.
-    function revokeConfirmation(uint transactionId)
+    /// @param _transactionId Transaction ID.
+    function revokeConfirmation(uint _transactionId)
         public
         ownerExists(msg.sender)
-        confirmed(transactionId, msg.sender)
-        notExecuted(transactionId)
+        confirmed(_transactionId, msg.sender)
+        notExecuted(_transactionId)
     {
-        confirmations[transactionId][msg.sender] = false;
-        Revocation(msg.sender, transactionId);
+        confirmations[_transactionId][msg.sender] = false;
+        Revocation(msg.sender, _transactionId);
     }
 
     /// @dev Allows anyone to execute a confirmed transaction.
@@ -352,12 +352,12 @@ contract MultiSigWallet {
     }
 
     /// @dev Returns the confirmation status of a transaction.
-    /// @param transactionId Transaction ID.
+    /// @param _transactionId Transaction ID.
     /// @return Confirmation status.
-    function isConfirmed(uint transactionId) public view returns (bool) {
+    function isConfirmed(uint _transactionId) public view returns (bool) {
         uint count = 0;
         for (uint i=0; i<owners.length; i++) {
-            if (confirmations[transactionId][owners[i]])
+            if (confirmations[_transactionId][owners[i]])
                 count += 1;
             if (count == required)
                 return true;
@@ -391,11 +391,11 @@ contract MultiSigWallet {
     */
 
     /// @dev Returns number of confirmations of a transaction.
-    /// @param transactionId Transaction ID.
+    /// @param _transactionId Transaction ID.
     /// @return Number of confirmations.
-    function getConfirmationCount(uint transactionId) public constant returns (uint count) {
+    function getConfirmationCount(uint _transactionId) public constant returns (uint count) {
         for (uint i=0; i<owners.length; i++)
-            if (confirmations[transactionId][owners[i]])
+            if (confirmations[_transactionId][owners[i]])
                 count += 1;
     }
 
@@ -417,14 +417,14 @@ contract MultiSigWallet {
     }
 
     /// @dev Returns array with owner addresses, which confirmed transaction.
-    /// @param transactionId Transaction ID.
+    /// @param _transactionId Transaction ID.
     /// @return Returns array of owner addresses.
-    function getConfirmations(uint transactionId) public constant returns (address[] _confirmations) {
+    function getConfirmations(uint _transactionId) public constant returns (address[] _confirmations) {
         address[] memory confirmationsTemp = new address[](owners.length);
         uint count = 0;
         uint i;
         for (i=0; i<owners.length; i++)
-            if (confirmations[transactionId][owners[i]]) {
+            if (confirmations[_transactionId][owners[i]]) {
                 confirmationsTemp[count] = owners[i];
                 count += 1;
             }
