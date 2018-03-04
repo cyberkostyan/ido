@@ -266,7 +266,12 @@ contract Token is ERC20 {
     /// @dev Allows to users withdraw eth in frozen stage 
     function withdrawFrozen() public isFrozenOnly noAnyReentrancy {
         require(invBalances[msg.sender] > 0);
-        uint amountWithdraw = totalInvSupply.mul(invBalances[msg.sender]).div(totalSupply);        
+
+        uint amountWithdraw = totalSupply.mul(invBalances[msg.sender]).div(totalInvSupply);
+        // fix possible rounding errors for last withdrawal:
+        if (amountWithdraw > address(this).balance) {
+            amountWithdraw = address(this).balance;
+        }
         invBalances[msg.sender] = 0;
         msg.sender.transfer(amountWithdraw);
     }
@@ -319,7 +324,7 @@ contract Token is ERC20 {
         balances[projectWallet] = balances[projectWallet].add(_amountProject);
         balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
         balances[msg.sender] = balances[msg.sender].add(_amountSender);
-        invBalances[msg.sender] = invBalances[msg.sender].add(_amountSender);
+        invBalances[msg.sender] = invBalances[msg.sender].add(_amountSender).add(_amountFounders).add(_amountProject);
         tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(_amountProject+_amountFounders+_amountSender);
         totalSupply = totalSupply.add(_amountProject+_amountFounders+_amountSender);
         Transfer(0x0, msg.sender, _amountSender);
