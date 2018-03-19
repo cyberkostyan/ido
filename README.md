@@ -32,11 +32,11 @@ This approach to funding has a few advantages to traditional ICOs.
  * there is less wastage of funds on marketing, pr and other bs that the current ICO craze has created.
  * investors have a chance to return at least some of their investments.
 
-## Annihilat.io
+## Array.io
 
-[Annihilat.io](https://annihilat.io/) is a testground for IDO funding method.
+[Array.io](https://array.io/) is a testground for IDO funding method.
 
-It is a simple idea combining two working technologies. DPOS (of graphene) and Solidity smart contracts. At the time of the writing Ethereum's market cap is roughly 30 billion dollars. If our blockchain reaches 1/1000th of that success, the market cap of Annihilat.io will reach $28m. If we, as founders/investors keep 10% of that, we will make a little bit of money. But on the way to this success 90% that is distributed to contributors may make some good money too.
+It is a simple idea combining two working technologies. DPOS (of graphene) and Solidity smart contracts. At the time of the writing Ethereum's market cap is roughly 30 billion dollars. If our blockchain reaches 1/1000th of that success, the market cap of Array.io will reach $28m. If we, as founders/investors keep 10% of that, we will make a little bit of money. But on the way to this success 90% that is distributed to contributors may make some good money too.
 
 The point of this project however is not only to bring to market another smart contract blockchain, even though we expect it to be much faster. The goal also is to create a precedent for a way projects can be funded. The community of contributors we may gather around us may transform this idea into something completely different and improve the idea greately. Only test will tell.
 
