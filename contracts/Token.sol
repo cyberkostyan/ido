@@ -125,7 +125,7 @@ contract Token is ERC20 {
     uint public tgeSettingsPartFounders;
     uint public tgeSettingsBlocksPerStage;
     uint public tgeSettingsPartInvestorIncreasePerStage;
-    uint public tgeSettingsAmountCollect;
+    uint public tgeSettingsAmountCollected;
     uint public tgeSettingsMaxStages;
     address public projectWallet;
     address public foundersWallet;
@@ -152,7 +152,7 @@ contract Token is ERC20 {
     }
 
     modifier targetIsNotAchieved(){
-        require(tgeSettingsAmountCollect < tgeSettingsAmount);
+        require(tgeSettingsAmountCollected < tgeSettingsAmount);
         _;
     }
 
@@ -189,13 +189,13 @@ contract Token is ERC20 {
     noAnyReentrancy
     {
         require(msg.value > 0);
-        if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
+        if(tgeSettingsAmountCollected.add(msg.value) >= tgeSettingsAmount){
             tgeLive = false;
         }
         uint refundAmount = 0;
         uint senderAmount = msg.value;
-        if(tgeSettingsAmountCollect.add(msg.value) >= tgeSettingsAmount){
-            refundAmount = tgeSettingsAmountCollect.add(msg.value).sub(tgeSettingsAmount);
+        if(tgeSettingsAmountCollected.add(msg.value) >= tgeSettingsAmount){
+            refundAmount = tgeSettingsAmountCollected.add(msg.value).sub(tgeSettingsAmount);
             senderAmount = (msg.value).sub(refundAmount);
         }
         uint stage = block.number.sub(tgeStartBlock).div(tgeSettingsBlocksPerStage);        
@@ -325,7 +325,7 @@ contract Token is ERC20 {
         balances[foundersWallet] = balances[foundersWallet].add(_amountFounders);
         balances[msg.sender] = balances[msg.sender].add(_amountSender);
         invBalances[msg.sender] = invBalances[msg.sender].add(_amountSender).add(_amountFounders).add(_amountProject);
-        tgeSettingsAmountCollect = tgeSettingsAmountCollect.add(_amountProject+_amountFounders+_amountSender);
+        tgeSettingsAmountCollected = tgeSettingsAmountCollected.add(_amountProject+_amountFounders+_amountSender);
         totalSupply = totalSupply.add(_amountProject+_amountFounders+_amountSender);
         Transfer(0x0, msg.sender, _amountSender);
         Transfer(0x0, projectWallet, _amountProject);
@@ -335,7 +335,7 @@ contract Token is ERC20 {
     function _internalTgeSetLive() internal {
         tgeLive = true;
         tgeStartBlock = block.number;
-        tgeSettingsAmountCollect = 0;
+        tgeSettingsAmountCollected = 0;
     }
 
 }
