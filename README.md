@@ -18,7 +18,7 @@ Now the tokens can be exchanged into crypto (in case of ethereum - ETH) at any t
 
 If it is a project with hight expectancy of success, and these tokens are believed to be exchange into project's coins, there will be much more non-contributing community people willing to buy the tokens from developers at a premium.
 
-When the token is exchanged back to crypto using the smart contract reserves, the crypto is sent to holder of tokens, and tokens are burnt. When 50% of crypto (ETH) reserves is burnt a next investment round kicks in automatically at a rate set by founders (that optionally can be set at any time, and could theoretically match market price of the token). At this point ETH is automatically converted to tokens at some rate (let's say 20:1, meaning for every 20 ETH investor gets 1 token and 19 tokens stay within contract for founders to pay contributors).
+When the token is exchanged back to crypto using the smart contract reserves, the crypto is sent to holder of tokens, and tokens are burnt. When project is depleted of tokens the next investment round kicks in automatically at a rate set by founders (that optionally can be set at any time, and could theoretically match market price of the token). At this point ETH is automatically converted to tokens at some rate (let's say 20:1, meaning for every 20 ETH investor gets 1 token and 19 tokens stay within contract for founders to pay contributors).
 
 It may so happen that the tokens never hit reserves in the smart contract, and there is always a demand for tokens that is greater than 1:1. in this case the project is complete totally with very little money of founders or their friends, which is returned after project is complete.
 
@@ -32,11 +32,11 @@ This approach to funding has a few advantages to traditional ICOs.
  * there is less wastage of funds on marketing, pr and other bs that the current ICO craze has created.
  * investors have a chance to return at least some of their investments.
 
-## Annihilat.io
+## Array.io
 
-[Annihilat.io](https://annihilat.io/) is a testground for IDO funding method.
+[Array.io](https://array.io/) is a testground for IDO funding method.
 
-It is a simple idea combining two working technologies. DPOS (of graphene) and Solidity smart contracts. At the time of the writing Ethereum's market cap is roughly 30 billion dollars. If our blockchain reaches 1/1000th of that success, the market cap of Annihilat.io will reach $28m. If we, as founders/investors keep 10% of that, we will make a little bit of money. But on the way to this success 90% that is distributed to contributors may make some good money too.
+It is a simple idea combining two working technologies. DPOS (of graphene) and Solidity smart contracts. At the time of the writing Ethereum's market cap is roughly 30 billion dollars. If our blockchain reaches 1/1000th of that success, the market cap of Array.io will reach $28m. If we, as founders/investors keep 10% of that, we will make a little bit of money. But on the way to this success 90% that is distributed to contributors may make some good money too.
 
 The point of this project however is not only to bring to market another smart contract blockchain, even though we expect it to be much faster. The goal also is to create a precedent for a way projects can be funded. The community of contributors we may gather around us may transform this idea into something completely different and improve the idea greately. Only test will tell.
 
